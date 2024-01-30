@@ -1,0 +1,4 @@
+data/01_raw/*
+!.gitkeep
+src/*.egg-info/
+__pycache__
