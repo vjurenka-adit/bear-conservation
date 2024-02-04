@@ -1,4 +1,3 @@
--e git+ssh://git@github.com/Chouffe/fruitpunchai.git@32197ea5d97ba283f8ae526a4920938cbb96c5f0#egg=albear&subdirectory=challenges/bear
 anyio==4.2.0
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
