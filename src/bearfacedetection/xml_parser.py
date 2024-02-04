@@ -5,6 +5,12 @@ from PIL import Image
 
 
 def image_element_to_image_data(e, base_path: Path) -> dict:
+    """Turns an xml element `e` into a python dict containing the following
+    keys:
+
+    - `filepath`: image filepath
+    - `bboxes`: list of dicts containing the following keys: top, left, width, height, parts.
+    """
     boxes = e.findall("box")
     boxes_data = []
 
@@ -45,6 +51,7 @@ def image_element_to_image_data(e, base_path: Path) -> dict:
 
 
 def parse_xml(base_path: Path, filepath: Path) -> dict:
+    """Parses the filepath and returns a python dict."""
     tree = ET.parse(filepath)
     root = tree.getroot()
     images = root.find("images")
@@ -61,6 +68,12 @@ def parse_xml(base_path: Path, filepath: Path) -> dict:
 
 
 def load_xml(base_path: Path, filepath: Path) -> dict:
+    """Loads an xml file from the BearID folder and returns the parsed xml data
+    as a python dict.
+
+    Eg.
+    >>> load_xml(Path('./data/01_raw/BearID'), Path('./data/01_raw/BearID/images_train_without_bc.xml'))
+    """
     xml_data = parse_xml(base_path=base_path, filepath=filepath)
 
     # Add image size to image_data
