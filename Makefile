@@ -33,11 +33,18 @@ bearfacedetection_data_golden_dataset_build_model_input:
 
 bearfacedetection_data: bearfacedetection_data_golden_dataset_yolov8_txt_format
 
-bearfacedetection_train:
+bearfacedetection_train_baseline_golden_dataset:
 	python ./scripts/bearfacedetection/train.py \
 		--data ./data/05_model_input/bearfacedetection/golden_dataset/data.yaml \
 		--epochs 2 \
+		--experiment-name golden_dataset_baseline \
 		--model "yolov8n.pt" \
 		--loglevel "info"
 
-bearfacedetection: bearfacedetection_data bearfacedetection_train
+bearfacedetection_predict_baseline_golden_dataset:
+	python ./scripts/bearfacedetection/predict.py \
+	  --model-weights data/06_models/bearfacedetection/yolov8/golden_dataset_baseline/weights/best.pt \
+	  --source-path data/05_model_input/bearfacedetection/golden_dataset/val/images/ \
+	  --save-path data/07_model_output/bearfacedetection/golden_dataset/val/predictions/
+
+bearfacedetection: bearfacedetection_data bearfacedetection_train_baseline_golden_dataset bearfacedetection_predict_baseline_golden_dataset
