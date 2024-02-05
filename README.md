@@ -130,6 +130,16 @@ make bearfacedetection_train_baseline_golden_dataset
 It should populate the `data/07_model_output` with predictions from the
 finetuned model.
 
+## bearfacesegmentation
+
+### Download SAM checkpoint weights
+
+Run the following command:
+
+```sh
+make download_sam_weights
+```
+
 ## Tools
 
 - [Gitlab Repositories](https://gitlab.com/groups/fruitpunch/projects/ai-for-bears)

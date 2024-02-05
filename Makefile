@@ -48,3 +48,6 @@ bearfacedetection_predict_baseline_golden_dataset:
 	  --save-path data/07_model_output/bearfacedetection/golden_dataset/val/predictions/
 
 bearfacedetection: bearfacedetection_data bearfacedetection_train_baseline_golden_dataset bearfacedetection_predict_baseline_golden_dataset
+
+download_sam_weights:
+	./scripts/bearfacesegmentation/sam/download_checkpoint.sh
