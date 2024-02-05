@@ -1,5 +1,6 @@
 .PHONY: download_dataset install_dependencies install_local_packages setup
 	dev_notebook bearface_data_yolov8_txt_format data_bearfacedetection
+	download_sam_weights
 
 install_dependencies: requirements.txt
 	python -m pip install -r requirements.txt
@@ -51,3 +52,18 @@ bearfacedetection: bearfacedetection_data bearfacedetection_train_baseline_golde
 
 download_sam_weights:
 	./scripts/bearfacesegmentation/sam/download_checkpoint.sh
+
+download_sam_hq_weights:
+	./scripts/bearfacesegmentation/sam-hq/download_checkpoint.sh
+
+segment_sam_bear_bodies:
+	python ./scripts/bearfacesegmentation/sam/segment.py \
+	  --model-weights ./data/06_models/bearfacesegmentation/sam/weights/sam_vit_h_4b8939.pth \
+	  --to ./data/04_feature/bearfacesegmentation/sam/full_bears/train/ \
+	  --xml-filepath ./data/01_raw/BearID/images_train_without_bc.xml \
+    	  --loglevel "info"
+	python ./scripts/bearfacesegmentation/sam/segment.py \
+	  --model-weights ./data/06_models/bearfacesegmentation/sam/weights/sam_vit_h_4b8939.pth \
+	  --to ./data/04_feature/bearfacesegmentation/sam/full_bears/test/ \
+	  --xml-filepath ./data/01_raw/BearID/images_test_without_bc.xml \
+    	  --loglevel "info"
