@@ -140,6 +140,7 @@ Run the following command:
 make download_sam_weights
 ```
 
+
 ## Tools
 
 - [Gitlab Repositories](https://gitlab.com/groups/fruitpunch/projects/ai-for-bears)
