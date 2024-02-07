@@ -41,14 +41,34 @@ def to_yolov8_point(x, y, size) -> dict:
     return {"x": normalized_x, "y": normalized_y}
 
 
-def to_yolov8_txt_format(bbox, size) -> str:
-    """Given a bbox, returns a string line described in the documentation: https://roboflow.com/formats/yolov8-pytorch-txt
-
-    eg. `0 0.617 0.3594420600858369 0.114 0.17381974248927037`
+def to_yolov8_txt_format(
+    bbox,
+    nose_point: tuple[int, int],
+    leye_point: tuple[int, int],
+    reye_point: tuple[int, int],
+    size: dict,
+    keypoints_order: list = ["nose", "leye", "reye"],
+) -> str:
     """
-    class_num = 0  # We only detect bear faces
-    yolov8 = to_yolov8_bbox(bbox, size)
-    return f"{class_num} {yolov8['center_x']} {yolov8['center_y']} {yolov8['w']} {yolov8['h']}"
+    Following the doc from here: https://docs.ultralytics.com/datasets/pose/#ultralytics-yolo-format
+    """
+    class_index = 0
+    normalized_bbox = to_yolov8_bbox(bbox, size)
+    normalized_point_nose = to_yolov8_point(nose_point[0], nose_point[1], size)
+    normalized_point_leye = to_yolov8_point(leye_point[0], leye_point[1], size)
+    normalized_point_reye = to_yolov8_point(reye_point[0], reye_point[1], size)
+    keypoints = {
+        "nose": normalized_point_nose,
+        "leye": normalized_point_leye,
+        "reye": normalized_point_reye,
+    }
+    ordered_keypoints = [keypoints[label] for label in keypoints_order]
+    keypoints_str = " ".join([f"{kp['x']} {kp['y']}" for kp in ordered_keypoints])
+    return f"{class_index} {normalized_bbox['center_x']} {normalized_bbox['center_y']} {normalized_bbox['w']} {normalized_bbox['h']} {keypoints_str}"
+
+
+def part_to_point(part):
+    return part["x"], part["y"]
 
 
 def build_yolov8_txt_format(xml_data, output_dir: Path) -> None:
@@ -69,7 +89,16 @@ def build_yolov8_txt_format(xml_data, output_dir: Path) -> None:
 
         # Making the label files
         label_content = "\n".join(
-            [to_yolov8_txt_format(bbox, image_size) for bbox in bboxes]
+            [
+                to_yolov8_txt_format(
+                    bbox=bbox,
+                    nose_point=part_to_point(bbox["parts"]["nose"]),
+                    leye_point=part_to_point(bbox["parts"]["leye"]),
+                    reye_point=part_to_point(bbox["parts"]["reye"]),
+                    size=image_size,
+                )
+                for bbox in bboxes
+            ]
         )
         with open(output_dir / "labels" / f"{filepath.stem}.txt", "w") as f:
             f.write(label_content)

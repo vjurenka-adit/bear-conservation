@@ -74,6 +74,17 @@ make download_dataset
 
 In this section, we describe how to train the bearfacedetection object detector.
 
+### Labeling
+
+We had to relabel the provided dataset (3359 bear face images from
+BearID) using Roboflow. We wanted to include the ears and mouths of the
+bears.
+
+#### Roboflow Instructions
+
+Adjust the bounding box to accurately encompass **the entire bear head**, ensuring it covers **both ears**, the **nose** and the **mouth**. 
+Strive for a compact bounding box that encapsulates the complete head and fur while minimizing unnecessary space.
+
 ### Build the model input
 
 YOLOv8 models use a very specific folder structure to be trained.

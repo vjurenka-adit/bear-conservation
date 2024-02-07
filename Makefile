@@ -105,9 +105,36 @@ bearfacesegmentation_data_build_model_input:
 	  --to ./data/05_model_input/bearfacesegmentation/v0/ \
 	  --loglevel "info"
 
-# FIXME: Should we remove?
-# flatten_bearid_images:
-# 	python ./scripts/data/collocate_files.py \
-# 	  --bearid-images-path ./data/01_raw/BearID/images/ \
-# 	  --to ./data/02_intermediate/flattened_bearid_images/ \
-# 	  --loglevel "info"
+bearfacesegmentation_train_baseline_golden_dataset:
+	python ./scripts/bearfacesegmentation/train.py \
+		--data ./data/05_model_input/bearfacesegmentation/v0/data.yaml \
+		--epochs 2 \
+		--experiment-name golden_dataset_baseline \
+		--model "yolov8n-seg.pt" \
+		--loglevel "info"
+
+# bearfacelandmarkdetection
+
+bearfacelandmarkdetection_data_golden_dataset_yolov8_txt_format:
+	python ./scripts/bearfacelandmarkdetection/data/build_yolov8_txt_format.py \
+		--xml-filepath ./data/01_raw/BearID/images_train_without_bc.xml \
+		--to ./data/04_feature/bearfacelandmarkdetection/golden_dataset/train/ \
+		--loglevel "info"
+	python ./scripts/bearfacelandmarkdetection/data/build_yolov8_txt_format.py \
+		--xml-filepath ./data/01_raw/BearID/images_test_without_bc.xml \
+		--to ./data/04_feature/bearfacelandmarkdetection/golden_dataset/test/ \
+		--loglevel "info"
+
+bearfacelandmarkdetection_data_golden_dataset_build_model_input:
+	python ./scripts/bearfacelandmarkdetection/data/build_model_input.py \
+		--from ./data/04_feature/bearfacelandmarkdetection/golden_dataset/ \
+		--to ./data/05_model_input/bearfacelandmarkdetection/golden_dataset/ \
+		--loglevel "info"
+
+bearfacelandmarkdetection_train_baseline_golden_dataset:
+	python ./scripts/bearfacelandmarkdetection/train.py \
+		--data ./data/05_model_input/bearfacelandmarkdetection/golden_dataset/data.yaml \
+		--epochs 2 \
+		--experiment-name golden_dataset_baseline \
+		--model "yolov8n-pose.pt" \
+		--loglevel "info"
