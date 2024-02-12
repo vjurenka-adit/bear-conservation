@@ -1,11 +1,9 @@
 import logging
 import os
-import random
 import shutil
 from pathlib import Path
 
 import yaml
-from tqdm import tqdm
 
 
 class MyDumper(yaml.Dumper):

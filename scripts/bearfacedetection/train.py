@@ -6,7 +6,6 @@ the data in the YOLOv8 Pytorch TXT format to be provided.
 import argparse
 import logging
 import os
-from pathlib import Path
 
 from bearfacedetection.train import load_model, train
 
