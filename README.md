@@ -70,6 +70,20 @@ your Google Drive following this
 make download_dataset
 ```
 
+### Download the Roboflow dataset
+
+Find the private key on
+[roboflow](https://app.roboflow.com/fruitpunch-ai-private-workspace-7nsdr/bearface-lk7vt/1).
+Click on Export Dataset, select YOLOv8
+format and show download code. The raw
+URL is displayed and the private key is
+located after the `key` parameter:
+`https://app.roboflow.com/ds/b8vuUrGhDn?key=***`
+
+```sh
+PRIVATE_KEY=findmeonroboflow make download_roboflow_bearfacedetection
+```
+
 ## bearfacedetection
 
 In this section, we describe how to train the bearfacedetection object detector.
