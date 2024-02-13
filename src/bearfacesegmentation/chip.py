@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any, Optional
 
@@ -25,11 +26,17 @@ def predict_bear_head(
     image_filepath: Path,
     max_det: int = 10,
 ) -> Optional[Any]:
-    if not image_filepath.exists():
+    try:
+        if not image_filepath.exists():
+            return None
+        else:
+            prediction_results = predict(model, image_filepath, max_det=max_det)
+            return prediction_results[0]
+    except:
+        logging.error(
+            f"Could not run inference on the following image_filepath: {image_filepath}"
+        )
         return None
-    else:
-        prediction_results = predict(model, image_filepath, max_det=max_det)
-        return prediction_results[0]
 
 
 def crop_from_yolov8(prediction_yolov8) -> np.ndarray:

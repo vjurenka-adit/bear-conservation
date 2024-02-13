@@ -19,6 +19,7 @@ def train(model: YOLO, params: dict):
         data=data_path,
         epochs=params["epochs"],
         imgsz=params["imgsz"],
+        batch=params["batch"],
         close_mosaic=params["close_mosaic"],
         # Data Augmentation parameters
         degrees=params["degrees"],

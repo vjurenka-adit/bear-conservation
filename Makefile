@@ -215,6 +215,17 @@ bearfacesegmentation_train_baseline_roboflow_relabelled:
 		--model "yolov8n-seg.pt" \
 		--loglevel "info"
 
+bearfacesegmentation_train_current_best_roboflow_relabelled:
+	python ./scripts/bearfacesegmentation/train.py \
+		--data ./data/05_model_input/bearfacesegmentation/b8vuUrGhDn/data.yaml \
+		--epochs 40 \
+		--close-mosaic 10 \
+		--imgsz 1024 \
+		--degrees 25 \
+		--experiment-name roboflow_relabelled_current_best \
+		--model "yolov8n-seg.pt" \
+		--loglevel "info"
+
 bearfacesegmentation_train: bearfacesegmentation_train_baseline_golden_dataset bearfacesegmentation_train_baseline_roboflow_relabelled
 
 bearfacesegmentation_predict_baseline_golden_dataset:
