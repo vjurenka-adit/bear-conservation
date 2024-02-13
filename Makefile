@@ -2,8 +2,20 @@
 	dev_notebook bearface_data_yolov8_txt_format data_bearfacedetection
 	download_sam_weights
 
-install_dependencies: requirements.txt
-	python -m pip install -r requirements.txt
+ifeq ($(OS),Windows_NT)
+    platform := Windows
+else
+    platform := $(shell uname -s)
+endif
+
+ifeq ($(platform), Darwin)
+    platform_specific_requirements = requirements/macos.txt
+else
+	platform_specific_requirements = requirements/linux.txt
+endif
+
+install_dependencies: $(platform_specific_requirements)
+	python -m pip install -r $(platform_specific_requirements)
 
 install_local_packages:
 	python -m pip install -e .
