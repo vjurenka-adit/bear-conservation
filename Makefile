@@ -220,6 +220,7 @@ bearfacesegmentation_train_current_best_roboflow_relabelled:
 		--data ./data/05_model_input/bearfacesegmentation/b8vuUrGhDn/data.yaml \
 		--epochs 40 \
 		--close-mosaic 10 \
+		--batch 64 \
 		--imgsz 1024 \
 		--degrees 25 \
 		--experiment-name roboflow_relabelled_current_best \
