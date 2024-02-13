@@ -217,7 +217,21 @@ bearfacesegmentation_train_baseline_roboflow_relabelled:
 
 bearfacesegmentation_train: bearfacesegmentation_train_baseline_golden_dataset bearfacesegmentation_train_baseline_roboflow_relabelled
 
-bearfacesegmentation: bearfacesegmentation_data bearfacesegmentation_train
+bearfacesegmentation_predict_baseline_golden_dataset:
+	python ./scripts/bearfacesegmentation/predict.py \
+	  --model-weights data/06_models/bearfacesegmentation/yolov8/golden_dataset_baseline/weights/best.pt \
+	  --source-path data/05_model_input/bearfacesegmentation/v0/val/images/ \
+	  --save-path data/07_model_output/bearfacesegmentation/golden_dataset/val/predictions/
+
+bearfacesegmentation_predict_baseline_roboflow_relabelled:
+	python ./scripts/bearfacesegmentation/predict.py \
+	  --model-weights ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_baseline/weights/best.pt \
+	  --source-path ./data/05_model_input/bearfacesegmentation/b8vuUrGhDn/val/images/ \
+	  --save-path data/07_model_output/bearfacesegmentation/b8vuUrGhDn/baseline/val/predictions/
+
+bearfacesegmentation_predict: bearfacesegmentation_predict_baseline_golden_dataset bearfacesegmentation_predict_baseline_roboflow_relabelled
+
+bearfacesegmentation: bearfacesegmentation_data bearfacesegmentation_train bearfacesegmentation_predict
 
 # -------------------------
 # bearfacelandmarkdetection
