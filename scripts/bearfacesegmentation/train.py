@@ -26,11 +26,6 @@ def make_cli_parser() -> argparse.ArgumentParser:
         type=int,
     )
     parser.add_argument(
-        "--batch",
-        default=16,
-        type=int,
-    )
-    parser.add_argument(
         "--model",
         default="yolov8n-seg.pt",
         help="pretrained model to use for finetuning. eg. yolov8n-seg.pt",
