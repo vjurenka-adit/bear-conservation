@@ -60,7 +60,9 @@ Run the following command to start a jupyter lab environment and start editing/r
 make dev_noteboook
 ```
 
-## Download the dataset
+## Download the datasets
+
+### Provided datasets (HackThePlanet, BearID, SLU, ...)
 
 Install [rclone](https://rclone.org/install/) and configure a remote for
 your Google Drive following this
@@ -70,7 +72,7 @@ your Google Drive following this
 make download_dataset
 ```
 
-### Download the Roboflow dataset
+### Roboflow bearfacedetection dataset
 
 Find the private key on
 [roboflow](https://app.roboflow.com/fruitpunch-ai-private-workspace-7nsdr/bearface-lk7vt/1).
@@ -80,13 +82,39 @@ URL is displayed and the private key is
 located after the `key` parameter:
 `https://app.roboflow.com/ds/b8vuUrGhDn?key=***`
 
+One can use the following command:
+
 ```sh
 PRIVATE_KEY=findmeonroboflow make download_roboflow_bearfacedetection
+```
+
+Or can export the `PRIVATE_KEY` as follows before running the subsequent commands:
+
+```sh
+export PRIVATE_KEY=findmeonroboflow
+```
+
+### All
+
+To download all data, run the following command:
+
+```sh
+export PRIVATE_KEY=findmeonroboflow
+make data
 ```
 
 ## bearfacedetection
 
 In this section, we describe how to train the bearfacedetection object detector.
+
+### Fast Track for bearfacedetection
+
+To download the data, prepare it, train an object detector and run
+inference, one can run the following command:
+
+```sh
+make bearfacedetection
+```
 
 ### Labeling
 
@@ -136,6 +164,10 @@ It should populate the `data/04_feature` and `data/05_model_input` folders.
 
 ### Training bearfacedetection
 
+#### Baselines
+
+##### Golden dataset
+
 Run the following command:
 
 ```sh
@@ -143,6 +175,22 @@ make bearfacedetection_train_baseline_golden_dataset
 ```
 
 _Note_: Training on CPU is possible with this setup but can take about 10/15minutes.
+
+##### Roboflow relabelled dataset
+
+Run the following command:
+
+```sh
+make bearfacedetection_bearfacedetection_train_baseline_roboflow
+```
+
+#### Train all
+
+To train all models, run the following command:
+
+```sh
+make bearfacedetection_train
+```
 
 ### Inference with bearfacedetection
 
@@ -157,14 +205,61 @@ finetuned model.
 
 ## bearfacesegmentation
 
+### Fast Track for bearfacesegmentation
+
+To download the data, prepare it, train an object detector and run
+inference, one can run the following command:
+
+```sh
+make bearfacesegmentation
+```
+
+___Note___: the bearfacedection command should be run prior to this
+command.
+
 ### Download SAM checkpoint weights
 
-Run the following command:
+Run the following commands:
 
 ```sh
 make download_sam_weights
+make download_sam_hq_weights
 ```
 
+### Prepare the data to train the bearfacesegmentation models
+
+```sh
+make bearfacesegmentation_data 
+```
+
+### Train the face segmentors
+
+```sh
+make bearfacesegmentation_train
+```
+
+## bearfacelandmarkdetection
+
+### Fast Track for bearfacelandmarkdetection
+
+To download the data, prepare it, train an object detector and run
+inference, one can run the following command:
+
+```sh
+make bearfacelandmarkdetection
+```
+
+### Prepare the data to train the bearfacelandmarkdetection models
+
+```sh
+make bearfacelandmarkdetection_data
+```
+
+### Train the bearfacelandmarkdetection models
+
+```sh
+make bearfacelandmarkdetection_train
+```
 
 ## Tools
 

@@ -1,6 +1,6 @@
 .PHONY: download_dataset install_dependencies install_local_packages setup flattened_bearid_images
 	dev_notebook bearface_data_yolov8_txt_format data_bearfacedetection
-	download_sam_weights
+	download_sam_weights bearfacedetection bearfacesegmentation bearfacelandmarkdetection
 
 ifeq ($(OS),Windows_NT)
     platform := Windows
@@ -28,10 +28,9 @@ dev_notebook:
 download_dataset:
 	./scripts/data/download_dataset.sh
 
-# bearfacedetection
-
 download_roboflow_bearfacedetection:
 	./scripts/data/download_roboflow_bearfacedetection.sh
+
 
 data_bearid_build_metadata:
 	python ./scripts/data/build_metadata_bearid.py \
@@ -39,7 +38,11 @@ data_bearid_build_metadata:
 		--to ./data/03_primary/golden_dataset/ \
 		--loglevel "info"
 
-data: download_dataset data_bearid_build_metadata
+data: download_dataset download_roboflow_bearfacedetection data_bearid_build_metadata
+
+# -----------------
+# bearfacedetection
+# -----------------
 
 bearfacedetection_data_golden_dataset_yolov8_txt_format:
 	python ./scripts/bearfacedetection/data/build_yolov8_txt_format.py \
@@ -57,7 +60,7 @@ bearfacedetection_data_golden_dataset_build_model_input:
 		--to ./data/05_model_input/bearfacedetection/golden_dataset/ \
 		--loglevel "info"
 
-bearfacedetection_data: bearfacedetection_data_golden_dataset_yolov8_txt_format
+bearfacedetection_data: bearfacedetection_data_golden_dataset_yolov8_txt_format bearfacedetection_data_golden_dataset_build_model_input
 
 bearfacedetection_train_baseline_golden_dataset:
 	python ./scripts/bearfacedetection/train.py \
@@ -75,15 +78,23 @@ bearfacedetection_train_baseline_roboflow:
 		--model "yolov8n.pt" \
 		--loglevel "info"
 
+bearfacedetection_train: bearfacedetection_train_baseline_golden_dataset bearfacedetection_train_baseline_roboflow
+
 bearfacedetection_predict_baseline_golden_dataset:
 	python ./scripts/bearfacedetection/predict.py \
 	  --model-weights data/06_models/bearfacedetection/yolov8/golden_dataset_baseline/weights/best.pt \
 	  --source-path data/05_model_input/bearfacedetection/golden_dataset/val/images/ \
 	  --save-path data/07_model_output/bearfacedetection/golden_dataset/val/predictions/
 
-bearfacedetection: bearfacedetection_data bearfacedetection_train_baseline_golden_dataset bearfacedetection_predict_baseline_golden_dataset
+bearfacedetection_predict: bearfacedetection_predict_baseline_golden_dataset
 
+# Command that runs all bearfacedetection code to prepare the data,
+# train and run inference
+bearfacedetection: bearfacedetection_data bearfacedetection_train bearfacedetection_predict
+
+# --------------------
 # bearfacesegmentation
+# --------------------
 
 download_sam_weights:
 	./scripts/bearfacesegmentation/sam/download_checkpoint.sh
@@ -127,18 +138,6 @@ segment_sam_golden_dataset_bear_heads:
 	  --to ./data/04_feature/bearfacesegmentation/sam/head/test/ \
 	--loglevel "info"
 
-segment_sam_with_relabelled_roboflow_bear_heads:
-	python ./scripts/bearfacesegmentation/sam/segment_head.py \
-	  --from-body-masks ./data/04_feature/bearfacesegmentation/sam/body/train/ \
-	  --from-head-bbox-yolov8-labels ./data/05_model_input/bearfacedetection/relabelled/b8vuUrGhDn/train/ \
-	  --to ./data/04_feature/bearfacesegmentation/b8vuUrGhDn/sam/head/train/ \
-	  --loglevel "info"
-	python ./scripts/bearfacesegmentation/sam/segment_head.py \
-	  --from-body-masks ./data/04_feature/bearfacesegmentation/sam/body/test/ \
-	  --from-head-bbox-yolov8-labels ./data/05_model_input/bearfacedetection/relabelled/b8vuUrGhDn/valid/ \
-	  --to ./data/04_feature/bearfacesegmentation/b8vuUrGhDn/sam/head/test/ \
-	  --loglevel "info"
-
 segment_sam_hq_golden_dataset_bear_heads:
 	python ./scripts/bearfacesegmentation/sam-hq/segment_head.py \
 	  --from-body-masks ./data/04_feature/bearfacesegmentation/sam-hq/body/train/ \
@@ -150,6 +149,18 @@ segment_sam_hq_golden_dataset_bear_heads:
 	  --from-head-bbox-xml-filepath ./data/01_raw/BearID/images_test_without_bc.xml \
 	  --to ./data/04_feature/bearfacesegmentation/sam-hq/head/test/ \
 	--loglevel "info"
+
+segment_sam_with_relabelled_roboflow_bear_heads:
+	python ./scripts/bearfacesegmentation/sam/segment_head.py \
+	  --from-body-masks ./data/04_feature/bearfacesegmentation/sam/body/train/ \
+	  --from-head-bbox-yolov8-labels ./data/05_model_input/bearfacedetection/relabelled/b8vuUrGhDn/train/ \
+	  --to ./data/04_feature/bearfacesegmentation/b8vuUrGhDn/sam/head/train/ \
+	  --loglevel "info"
+	python ./scripts/bearfacesegmentation/sam/segment_head.py \
+	  --from-body-masks ./data/04_feature/bearfacesegmentation/sam/body/test/ \
+	  --from-head-bbox-yolov8-labels ./data/05_model_input/bearfacedetection/relabelled/b8vuUrGhDn/valid/ \
+	  --to ./data/04_feature/bearfacesegmentation/b8vuUrGhDn/sam/head/test/ \
+	  --loglevel "info"
 
 bearfacesegmentation_data_golden_dataset_yolov8_txt_format:
 	python ./scripts/bearfacesegmentation/data/build_yolov8_txt_format.py \
@@ -186,6 +197,8 @@ bearfacesegmentation_data_roboflow_relabelled_build_model_input:
 	  --to ./data/05_model_input/bearfacesegmentation/b8vuUrGhDn/ \
 	  --loglevel "info"
 
+bearfacesegmentation_data: download_sam_weights download_sam_hq_weights segment_sam_golden_dataset_bear_bodies segment_sam_hq_golden_dataset_bear_bodies segment_sam_golden_dataset_bear_heads segment_sam_hq_golden_dataset_bear_heads segment_sam_with_relabelled_roboflow_bear_heads bearfacesegmentation_data_golden_dataset_yolov8_txt_format bearfacesegmentation_data_roboflow_relabelled_yolov8_txt_format bearfacesegmentation_data_golden_dataset_build_model_input bearfacesegmentation_data_roboflow_relabelled_build_model_input
+
 bearfacesegmentation_train_baseline_golden_dataset:
 	python ./scripts/bearfacesegmentation/train.py \
 		--data ./data/05_model_input/bearfacesegmentation/v0/data.yaml \
@@ -202,7 +215,13 @@ bearfacesegmentation_train_baseline_roboflow_relabelled:
 		--model "yolov8n-seg.pt" \
 		--loglevel "info"
 
+bearfacesegmentation_train: bearfacesegmentation_train_baseline_golden_dataset bearfacesegmentation_train_baseline_roboflow_relabelled
+
+bearfacesegmentation: bearfacesegmentation_data bearfacesegmentation_train
+
+# -------------------------
 # bearfacelandmarkdetection
+# -------------------------
 
 bearfacelandmarkdetection_data_golden_dataset_yolov8_txt_format:
 	python ./scripts/bearfacelandmarkdetection/data/build_yolov8_txt_format.py \
@@ -220,6 +239,8 @@ bearfacelandmarkdetection_data_golden_dataset_build_model_input:
 		--to ./data/05_model_input/bearfacelandmarkdetection/golden_dataset/ \
 		--loglevel "info"
 
+bearfacelandmarkdetection_data: bearfacelandmarkdetection_data_golden_dataset_yolov8_txt_format bearfacelandmarkdetection_data_golden_dataset_build_model_input
+
 bearfacelandmarkdetection_train_baseline_golden_dataset:
 	python ./scripts/bearfacelandmarkdetection/train.py \
 		--data ./data/05_model_input/bearfacelandmarkdetection/golden_dataset/data.yaml \
@@ -227,3 +248,7 @@ bearfacelandmarkdetection_train_baseline_golden_dataset:
 		--experiment-name golden_dataset_baseline \
 		--model "yolov8n-pose.pt" \
 		--loglevel "info"
+
+bearfacelandmarkdetection_train: bearfacelandmarkdetection_train_baseline_golden_dataset
+
+bearfacelandmarkdetection: bearfacelandmarkdetection_data bearfacelandmarkdetection_train
