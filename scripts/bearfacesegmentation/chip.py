@@ -38,9 +38,10 @@ def make_cli_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--resize-to",
+        nargs="+",
         type=int,
-        help="width in pixel of the square box for the chip.",
-        default=200,
+        help="width in pixel of the square box for the chip. Multiple arguments can be passed to resize to different dimensions.",
+        default=[100, 150, 200, 250, 300],
     )
     parser.add_argument(
         "--source-dir",
@@ -74,10 +75,11 @@ if __name__ == "__main__":
     if not validate_parsed_args(args):
         exit(1)
     else:
+        print(args)
         missing_bear_heads = []
         source_dir = Path(args["source_dir"])
         save_path = Path(args["save_path"])
-        square_dim = args["resize_to"]
+        square_dim_list = args["resize_to"]
         image_filepaths = get_filepaths(source_dir)
 
         logging.info(f"Creating the directory to save the results {save_path}")
@@ -99,7 +101,7 @@ if __name__ == "__main__":
             # To generate the chips, we assume that there is only one bear head
             # per image_filepath
             prediction_yolov8 = predict_bear_head(model, image_filepath, max_det=1)
-            if not prediction_yolov8.masks:
+            if not prediction_yolov8 or not prediction_yolov8.masks:
                 missing_bear_heads.append(image_filepath)
                 logging.error(f"Can't find bear heads in {image_filepath}")
             else:
@@ -113,26 +115,32 @@ if __name__ == "__main__":
                     save_path / "padded" / f"{relative.parent}/{relative.stem}.jpg"
                 )
 
-                output_resized_chip_filepath = (
-                    save_path / "resized" / f"{relative.parent}/{relative.stem}.jpg"
-                )
                 padded_cropped_head = square_pad(cropped_bear_head)
-                resized_padded_cropped_head = resize(
-                    padded_cropped_head,
-                    dim=(square_dim, square_dim),
-                )
 
                 # Creating the directories if needed
                 os.makedirs(output_raw_chip_filepath.parent, exist_ok=True)
                 os.makedirs(output_padded_chip_filepath.parent, exist_ok=True)
-                os.makedirs(output_resized_chip_filepath.parent, exist_ok=True)
 
-                # Writing the chips
+                # Writing the image artifacts
                 cv2.imwrite(str(output_raw_chip_filepath), cropped_bear_head)
                 cv2.imwrite(str(output_padded_chip_filepath), padded_cropped_head)
-                cv2.imwrite(
-                    str(output_resized_chip_filepath), resized_padded_cropped_head
-                )
+
+                # Creating the thumbnails
+                for square_dim in square_dim_list:
+                    output_resized_chip_filepath = (
+                        save_path
+                        / "resized"
+                        / f"square_dim_{square_dim}"
+                        / f"{relative.parent}/{relative.stem}.jpg"
+                    )
+                    resized_padded_cropped_head = resize(
+                        padded_cropped_head,
+                        dim=(square_dim, square_dim),
+                    )
+                    os.makedirs(output_resized_chip_filepath.parent, exist_ok=True)
+                    cv2.imwrite(
+                        str(output_resized_chip_filepath), resized_padded_cropped_head
+                    )
 
         if missing_bear_heads:
             logging.warning(
