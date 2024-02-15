@@ -243,11 +243,17 @@ bearfacesegmentation_predict_baseline_roboflow_relabelled:
 
 bearfacesegmentation_predict: bearfacesegmentation_predict_baseline_golden_dataset bearfacesegmentation_predict_baseline_roboflow_relabelled
 
-bearfacesegmentation_yolov8_chips:
-	python ./scripts/bearfacesegmentation/chip.py \
+bearfacesegmentation_yolov8_generate_chips:
+	python ./scripts/bearfacesegmentation/chips/generate.py \
 	  --source-dir ./data/01_raw/BearID/images/ \
 	  --save-path ./data/07_model_output/bearfacesegmentation/chips/yolov8/ \
 	  --instance-segmentation-model-weights ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_current_best/weights/best.pt \
+	  --loglevel "info"
+
+bearfacesegmentation_archive_chips:
+	python ./scripts/bearfacesegmentation/chips/archive.py \
+	  --source-dir ./data/07_model_output/bearfacesegmentation/chips/yolov8/resized/ \
+	  --save-path ./data/07_model_output/bearfacesegmentation/chips/yolov8/ \
 	  --loglevel "info"
 
 bearfacesegmentation: bearfacesegmentation_data bearfacesegmentation_train bearfacesegmentation_predict

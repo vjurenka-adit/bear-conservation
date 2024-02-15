@@ -75,7 +75,6 @@ if __name__ == "__main__":
     if not validate_parsed_args(args):
         exit(1)
     else:
-        print(args)
         missing_bear_heads = []
         source_dir = Path(args["source_dir"])
         save_path = Path(args["save_path"])
