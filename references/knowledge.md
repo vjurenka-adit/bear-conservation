@@ -19,3 +19,7 @@
 - [NPU - microcontroller setup](https://www.nxp.com/company/blog/why-the-arm-ethos-u65-micronpu-is-a-big-deal-and-how-it-came-to-be-this-way:BL-ARM-ETHOS-U65-MICRONPU)
 - [Video presentation of the MX93](https://www.hackster.io/videos/1429)
 - [Testing and evaluation environment](https://www.nxp.com/design/design-center/development-boards/i-mx-evaluation-and-development-boards/i-mx-93-evaluation-kit:i.MX93EVK)
+
+## DeepLearning Training recipe
+
+- [Karpathy - A recipe for training Neural Network](https://karpathy.github.io/2019/04/25/recipe/)
