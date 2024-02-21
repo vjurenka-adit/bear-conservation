@@ -30,3 +30,6 @@ notebooks/bearidentification/metric_learning/example_saved_models/
 notebooks/bearidentification/metric_learning/example_tensorboard/
 notebooks/bearidentification/metric_learning/FashionMNIST/
 notebooks/bearidentification/metric_learning/cifar-10*
+notebooks/bearidentification/datasplit/example_logs/
+notebooks/bearidentification/datasplit/example_tensorboard/
+notebooks/bearidentification/datasplit/runs/
