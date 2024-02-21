@@ -205,6 +205,24 @@ finetuned model.
 
 ## bearfacesegmentation
 
+### Generate chips
+
+Use the following command:
+
+```sh
+make bearfacesegmentation_yolov8_generate_chips
+```
+
+To run it on other images, one can run the following command:
+
+```sh
+python ./scripts/bearfacesegmentation/chips/generate.py \
+  --source-dir ./data/01_raw/BearID/images/ \
+  --save-path ./data/07_model_output/bearfacesegmentation/chips/yolov8/ \
+  --instance-segmentation-model-weights ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_current_best/weights/best.pt \
+  --loglevel "info"
+```
+
 ### Fast Track for bearfacesegmentation
 
 To download the data, prepare it, train an object detector and run

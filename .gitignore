@@ -22,3 +22,11 @@ yolov8m-seg.pt
 yolov8l-seg.pt
 yolov8x-seg.pt
 yolov8n-pose.pt
+
+notebooks/bearidentification/metric_learning/02 model.png
+notebooks/bearidentification/metric_learning/MNIST/
+notebooks/bearidentification/metric_learning/example_logs/
+notebooks/bearidentification/metric_learning/example_saved_models/
+notebooks/bearidentification/metric_learning/example_tensorboard/
+notebooks/bearidentification/metric_learning/FashionMNIST/
+notebooks/bearidentification/metric_learning/cifar-10*
