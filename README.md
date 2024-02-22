@@ -107,6 +107,8 @@ make data
 
 In this section, we describe how to train the bearfacedetection object detector.
 
+![Detected bear face using the bear face detector](./docs/assets/images/model_output/facedetection/image1.jpg)
+
 ### Fast Track for bearfacedetection
 
 To download the data, prepare it, train an object detector and run
