@@ -207,7 +207,29 @@ finetuned model.
 
 ### Generate chips
 
-Use the following command:
+#### Test the setup with test images
+
+Some test images are provided to test that the chip generation script works properly.
+The test images are located in `data/09_external/bearid/images/bears/`.
+
+Use the following python script (change your parameters as needed):
+
+```sh
+python ./scripts/bearfacesegmentation/chips/generate.py \
+  --source-dir ./data/09_external/images/bears/ \
+  --save-path ./data/07_model_output/bearfacesegmentation/chips/test/ \
+  --instance-segmentation-model-weights ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_current_best/weights/best.pt \
+  --loglevel "info"
+```
+
+The following chips should be generated in your `save-path`:
+
+![Chip 1](./docs/assets/images/chips/image1.jpg) ![Chip 2](./docs/assets/images/chips/image2.jpg) ![Chip 3](./docs/assets/images/chips/image3.jpg)
+
+#### Generate BearID chips
+
+Make sure that the bearID dataset is on your machine and then use the following
+command:
 
 ```sh
 make bearfacesegmentation_yolov8_generate_chips

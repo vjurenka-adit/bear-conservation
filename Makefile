@@ -252,6 +252,13 @@ bearfacesegmentation_yolov8_generate_chips:
 	  --instance-segmentation-model-weights ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_current_best/weights/best.pt \
 	  --loglevel "info"
 
+bearfacesegmentation_yolov8_generate_test_chips:
+	python ./scripts/bearfacesegmentation/chips/generate.py \
+	  --source-dir ./data/09_external/images/bears/ \
+	  --save-path ./data/07_model_output/bearfacesegmentation/chips/test/ \
+	  --instance-segmentation-model-weights ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_current_best/weights/best.pt \
+	  --loglevel "info"
+
 bearfacesegmentation_archive_chips:
 	python ./scripts/bearfacesegmentation/chips/archive.py \
 	  --source-dir ./data/07_model_output/bearfacesegmentation/chips/yolov8/resized/ \
