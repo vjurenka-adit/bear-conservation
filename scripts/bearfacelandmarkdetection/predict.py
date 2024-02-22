@@ -2,7 +2,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from bearfacedetection.predict import load_model, predict
+from bearfacelandmarkdetection.predict import load_model, predict
 
 
 def validate_parsed_args(args: dict) -> bool:

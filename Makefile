@@ -300,3 +300,11 @@ bearfacelandmarkdetection_train_baseline_golden_dataset:
 bearfacelandmarkdetection_train: bearfacelandmarkdetection_train_baseline_golden_dataset
 
 bearfacelandmarkdetection: bearfacelandmarkdetection_data bearfacelandmarkdetection_train
+
+bearfacelandmarkdetection_predict_baseline_golden_dataset:
+	python ./scripts/bearfacelandmarkdetection/predict.py \
+	  --model-weights data/06_models/bearfacelandmarkdetection/yolov8/golden_dataset_baseline/weights/best.pt \
+	  --source-path data/05_model_input/bearfacelandmarkdetection/golden_dataset/val/images/ \
+	  --save-path data/07_model_output/bearfacelandmarkdetection/golden_dataset/val/predictions/
+
+bearfacelandmarkdetection_predict: bearfacelandmarkdetection_predict_baseline_golden_dataset

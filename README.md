@@ -207,6 +207,11 @@ finetuned model.
 
 ## bearfacesegmentation
 
+In this section, we describe how to train and run the bearfacesegmentation
+segmentor model.
+
+![Segmented face of a bear](./docs/assets/images/model_output/facesegmentation/image1.jpg)
+
 ### Generate chips
 
 #### Test the setup with test images
@@ -281,6 +286,11 @@ make bearfacesegmentation_train
 ```
 
 ## bearfacelandmarkdetection
+
+In this section, we describe how to train and run the bearfacelandmarkdetection
+keypose detector.
+
+![Pose of a bear using the bearfacelandmarkdetectort](./docs/assets/images/model_output/pose/image1.jpg)
 
 ### Fast Track for bearfacelandmarkdetection
 
