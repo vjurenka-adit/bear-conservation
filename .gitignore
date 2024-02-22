@@ -10,6 +10,8 @@ data/08_reporting/*
 src/*.egg-info/
 __pycache__
 
+vendors/
+
 sam_b*
 yolov8n.pt
 yolov8s.pt

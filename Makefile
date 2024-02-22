@@ -1,6 +1,7 @@
 .PHONY: download_dataset install_dependencies install_local_packages setup flattened_bearid_images
 	dev_notebook bearface_data_yolov8_txt_format data_bearfacedetection
 	download_sam_weights bearfacedetection bearfacesegmentation bearfacelandmarkdetection
+	install_vendor_packages
 
 ifeq ($(OS),Windows_NT)
     platform := Windows
@@ -20,7 +21,10 @@ install_dependencies: $(platform_specific_requirements)
 install_local_packages:
 	python -m pip install -e .
 
-setup: install_dependencies install_local_packages
+install_vendor_packages:
+	./scripts/install_lightglue.sh
+
+setup: install_dependencies install_local_packages install_vendor_packages
 
 dev_notebook:
 	jupyter lab
@@ -318,4 +322,18 @@ bearidentification_data_split_by_individual:
 	python ./scripts/bearidentification/data/split/by_individual.py \
 	  --save-path ./data/04_feature/bearidentification/bearid/split/ \
 	  --chips-root-dir ./data/07_model_output/bearfacesegmentation/chips/yolov8/resized/square_dim_300/ \
+	  --loglevel "info"
+
+bearidentification_data_lightglue_keypoints_generate:
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "sift" \
+	  --loglevel "info"
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "superpoint" \
+	  --loglevel "info"
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "disk" \
+	  --loglevel "info"
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "aliked" \
 	  --loglevel "info"
