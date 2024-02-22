@@ -308,3 +308,14 @@ bearfacelandmarkdetection_predict_baseline_golden_dataset:
 	  --save-path data/07_model_output/bearfacelandmarkdetection/golden_dataset/val/predictions/
 
 bearfacelandmarkdetection_predict: bearfacelandmarkdetection_predict_baseline_golden_dataset
+
+
+# ------------------
+# bearidentification
+# ------------------
+
+bearidentification_data_split_by_individual:
+	python ./scripts/bearidentification/data/split/by_individual.py \
+	  --save-path ./data/04_feature/bearidentification/bearid/split/ \
+	  --chips-root-dir ./data/07_model_output/bearfacesegmentation/chips/yolov8/resized/square_dim_300/ \
+	  --loglevel "info"
