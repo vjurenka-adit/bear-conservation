@@ -331,16 +331,38 @@ bearidentification_data_split_by_individual:
 	  --chips-root-dir ./data/07_model_output/bearfacesegmentation/chips/yolov8/resized/square_dim_300/ \
 	  --loglevel "info"
 
-bearidentification_data_lightglue_keypoints_generate:
+bearidentification_data_lightglue_keypoints_1024_generate:
 	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
 	  --extractor "sift" \
+	  --n-keypoints 1024 \
 	  --loglevel "info"
 	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
 	  --extractor "superpoint" \
+	  --n-keypoints 1024 \
 	  --loglevel "info"
 	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
 	  --extractor "disk" \
+	  --n-keypoints 1024 \
 	  --loglevel "info"
 	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
 	  --extractor "aliked" \
+	  --n-keypoints 1024 \
+	  --loglevel "info"
+
+bearidentification_data_lightglue_keypoints_256_generate:
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "sift" \
+	  --n-keypoints 256 \
+	  --loglevel "info"
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "superpoint" \
+	  --n-keypoints 256 \
+	  --loglevel "info"
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "disk" \
+	  --n-keypoints 256 \
+	  --loglevel "info"
+	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
+	  --extractor "aliked" \
+	  --n-keypoints 256 \
 	  --loglevel "info"
