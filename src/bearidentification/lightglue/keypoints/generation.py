@@ -30,6 +30,7 @@ def extractor_type_to_extractor(device, extractor_type: str, n_keypoints: int = 
 
 
 def extract_all(
+    device,
     image_filepaths: list[Path],
     extractor,
 ) -> dict:
@@ -39,7 +40,7 @@ def extract_all(
 
     for image_filepath in tqdm(image_filepaths):
         logging.info(f"Extracting features from {image_filepath}")
-        image = load_image(image_filepath)
+        image = load_image(image_filepath).to(device)
         features = extractor.extract(image)
         results[str(image_filepath)] = features
 
@@ -80,7 +81,9 @@ def run(
     extractor = extractor_type_to_extractor(
         device=device, extractor_type=extractor_type, n_keypoints=n_keypoints
     )
-    features_dict = extract_all(image_filepaths=filepaths, extractor=extractor)
+    features_dict = extract_all(
+        device=device, image_filepaths=filepaths, extractor=extractor
+    )
     save(
         filepaths=filepaths,
         save_dir=save_dir,
