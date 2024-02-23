@@ -318,6 +318,13 @@ bearfacelandmarkdetection_predict: bearfacelandmarkdetection_predict_baseline_go
 # bearidentification
 # ------------------
 
+bearidentification_data_download_generated_chips_british_columbia:
+	./scripts/data/download_british_columbia_chips.sh
+
+bearidentification_data_merge_generated_chips:
+	./scripts/data/merge_generated_chips.sh
+
+
 bearidentification_data_split_by_individual:
 	python ./scripts/bearidentification/data/split/by_individual.py \
 	  --save-path ./data/04_feature/bearidentification/bearid/split/ \
