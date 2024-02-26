@@ -10,6 +10,7 @@ data/08_reporting/*
 src/*.egg-info/
 __pycache__
 .ipynb_checkpoints
+.virtual_documents
 
 vendors/
 
