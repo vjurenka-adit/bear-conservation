@@ -26,6 +26,7 @@ flatbuffers==23.5.26
 fonttools==4.47.2
 fqdn==1.5.1
 fsspec==2023.12.2
+-e git+https://github.com/IDEA-Research/GroundingDINO.git@d13643262e654c6e14b90995210da65d01f5783b#egg=groundingdino
 huggingface-hub==0.20.3
 humanfriendly==10.0
 idna==3.6
