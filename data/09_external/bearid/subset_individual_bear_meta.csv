@@ -1,0 +1,134 @@
+BearID identifier,Bear number (given at fieldsite),Bear name (given at fieldsite),Sex,Age category in images,Year born (known),Geographic location ,Comments
+bc_adeane,bc_f020,adeane,F,adult,,"British Columbia, Canada",
+bc_also,bc_f037,also,F,adult,2012,"British Columbia, Canada",
+bc_amber,bc_f039,amber,F,subadult; adult,2013,"British Columbia, Canada",
+bc_aurora,bc_f040,aurora,F,adult,,"British Columbia, Canada",
+bc_beatrice,bc_f006,beatrice,F,adult,2005,"British Columbia, Canada",
+bc_bella,bc_f001,bella,F,adult,2000,"British Columbia, Canada",
+bc_bellanore,bc_f019,bellanore,F,adult,,"British Columbia, Canada",
+bc_bracket,bc_m023,bracket,M,subadult,2008,"British Columbia, Canada",
+bc_bruno,bc_m001,bruno,M,adult,,"British Columbia, Canada",
+bc_caramel,bc_m024,caramel,M,adult,,"British Columbia, Canada",
+bc_chestnut,bc_m027,chestnut,M,adult,,"British Columbia, Canada",
+bc_cleo,bc_f041,cleo,F,adult,,"British Columbia, Canada",
+bc_clyde,bc_m028,clyde,M,adult,,"British Columbia, Canada",
+bc_coco,bc_f043,coco,F,adult,,"British Columbia, Canada",
+bc_cross-paw,bc_m005,cross paw,M,adult,,"British Columbia, Canada",
+bc_dani-bear,bc_m008,dani bear,M,adult,,"British Columbia, Canada",
+bc_diablo,bc_m006,diablo,M,adult,,"British Columbia, Canada",
+bc_fisher,bc_f036,fisher,F,adult,2010,"British Columbia, Canada",
+bc_flora,bc_f016,flora,F,subadult;adult,2012,"British Columbia, Canada",
+bc_frank,bc_m022,frank,M,subadult;adult,2013,"British Columbia, Canada",
+bc_freckles,bc_f044,freckles,F,subadult,,"British Columbia, Canada",
+bc_freda,bc_f025,freda,F,adult,,"British Columbia, Canada",
+bc_freya,bc_f014,freya,F,subadult,2010,"British Columbia, Canada",
+bc_gary,bc_m014,gary,M,subadult,2011,"British Columbia, Canada",
+bc_gc,bc_f011,GC,F,adult,2005,"British Columbia, Canada",
+bc_glory,bc_f007,glory,F,adult,,"British Columbia, Canada",
+bc_hoeya,bc_f008,hoeya,F,adult,,"British Columbia, Canada",
+bc_jacque,bc_m007,jacque,M,adult,,"British Columbia, Canada",
+bc_kiokh,bc_f021,kiokh,F,adult,2009,"British Columbia, Canada",
+bc_kwatse,bc_f009,kwatse,F,adult,,"British Columbia, Canada",
+bc_lenore,bc_f002,lenore,F,adult,2003,"British Columbia, Canada",
+bc_lil-willy,bc_m029,lil willy,M,subadult,,"British Columbia, Canada",
+bc_lillian,bc_f015,lillian,F,subadult;adult,2012,"British Columbia, Canada",
+bc_lucky,bc_f013,lucky,F,adult,,"British Columbia, Canada",
+bc_matsui,bc_f033,matsui,F,adult,2009,"British Columbia, Canada",
+bc_millerd,bc_f028,millerd,F,adult,,"British Columbia, Canada",
+bc_mouse,bc_f045,mouse,F,subadult,,"British Columbia, Canada",
+bc_neana,bc_f004,neana,F,adult,,"British Columbia, Canada",
+bc_no-tail,bc_f029,no tail,F,adult,,"British Columbia, Canada",
+bc_old-girl,bc_f047,old girl,F,adult,,"British Columbia, Canada",
+bc_oso,bc_f018,oso,F,subadult;adult,2012,"British Columbia, Canada",
+bc_peanut,bc_m030,peanut,M,subadult,2009,"British Columbia, Canada",
+bc_pete,bc_m031,pete,M,adult,,"British Columbia, Canada",
+bc_pirate,bc_m032,pirate,M,adult,,"British Columbia, Canada",
+bc_pretty-boy,bc_m004,pretty boy,M,adult,,"British Columbia, Canada",
+bc_river,bc_f048,river,F,adult,,"British Columbia, Canada",
+bc_sallie,bc_f010,sallie,F,adult,,"British Columbia, Canada",
+bc_santa,bc_m033,santa,M,adult,,"British Columbia, Canada",
+bc_shaniqua,bc_f003,shaniqua,F,adult,,"British Columbia, Canada",
+bc_simoom,bc_m010,simoom,M,adult,,"British Columbia, Canada",
+bc_stella,bc_f049,stella,F,subadult,2015,"British Columbia, Canada",
+bc_steve,bc_m015,steve,M,subadult;adult,2011,"British Columbia, Canada",
+bc_teddy-blonde,bc_m025,teddy blonde,M,subadult,2013,"British Columbia, Canada",
+bc_teddy-brown,bc_m026,teddy brown,M,subadult,2013,"British Columbia, Canada",
+bc_toffee,bc_m013,toffee,M,subadult;adult,2010,"British Columbia, Canada",
+bc_topaz,bc_f034,topaz,F,adult,,"British Columbia, Canada",
+bc_trouble,bc_m017,trouble,M,subadult;adult,2012,"British Columbia, Canada",
+bc_tuna,bc_f031,tuna,F,adult,,"British Columbia, Canada",
+bc_ursa,bc_f005,ursa,F,adult,,"British Columbia, Canada",
+bf_032,bf_032,chunk,M,adult,,"Alaska, USA",subadult in 2007
+bf_039,bf_039,,F,adult,,"Alaska, USA",subadult 2007
+bf_045,bf_045,tatonka,M,adult,,"Alaska, USA",adult in 2007
+bf_051,bf_051,diver junior,M,adult,,"Alaska, USA",subadult in 2007
+bf_068,bf_068,,M,adult,,"Alaska, USA",subadult in 2007
+bf_083,bf_083,wayne brother,M,adult,,"Alaska, USA",subadult in 2007
+bf_089,bf_089,backpack,M,adult,2006,"Alaska, USA",
+bf_093,bf_093,,F,adult,,"Alaska, USA",
+bf_094,bf_094,,F,adult,,"Alaska, USA",adult only
+bf_128,bf_128,grazer,F,adult,2005,"Alaska, USA",subadult 2009 only
+bf_130,bf_130,tundra,F,adult,2007,"Alaska, USA",deceased 2014
+bf_132,bf_132,,F,adult,2005,"Alaska, USA",subadult 2009 only
+bf_151,bf_151,walker,M,adult,2007,"Alaska, USA",
+bf_153,bf_153,,F,adult,,"Alaska, USA",*As of 2018 thought to be bf_039; ID needs combining
+bf_171,bf_171,,F,adult,,"Alaska, USA",subadult in 2009
+bf_201,bf_201,,F,adult,,"Alaska, USA",
+bf_218,bf_218,ugly,M,adult,,"Alaska, USA",adult in 2001
+bf_261,bf_261,,F,subadult;adult,2008,"Alaska, USA",
+bf_263,bf_263,,F,adult,,"Alaska, USA",
+bf_273,bf_273,,F,adult,,"Alaska, USA",old subadult 2011
+bf_274,bf_274,overflow,M,adult,2007,"Alaska, USA",
+bf_284,bf_284,electra,F,adult,2008,"Alaska, USA",
+bf_289,bf_289,,F,adult,,"Alaska, USA",
+bf_293,bf_293,long neck,M,adult,,"Alaska, USA",
+bf_294,bf_294,,,adult,,"Alaska, USA",sex unknown
+bf_401,bf_401,,,adult,,"Alaska, USA",sex unknown
+bf_402,bf_402,,F,adult,1998,"Alaska, USA",bf_24=father;bf_209=mother
+bf_409,bf_409,beadnose,F,adult,,"Alaska, USA",1999 as subadult
+bf_410,bf_410,four-ton,F,adult,1989,"Alaska, USA",
+bf_415,bf_415,,F,adult,,"Alaska, USA",adult in 2001
+bf_425,bf_425,jan,F,adult,,"Alaska, USA",
+bf_435,bf_435,holly,F,adult,,"Alaska, USA",old subadult 2001
+bf_451,bf_451,,F,adult,,"Alaska, USA",2013 as adult
+bf_461,bf_461,,M,adult,,"Alaska, USA",
+bf_469,bf_469,digger/patches,M,adult,,"Alaska, USA",adult in 2001
+bf_474,bf_474,,M,adult,,"Alaska, USA",adult in 2014
+bf_477,bf_477,sara,F,adult,,"Alaska, USA",2001 as adult
+bf_480,bf_480,otis,M,adult,,"Alaska, USA",old subadult in 2001
+bf_482,bf_482,brett,F,adult,,"Alaska, USA",2001 as adult
+bf_489,bf_489,ted,M,adult,,"Alaska, USA",subadult in 2001
+bf_500,bf_500,indy,F,subadult,2012,"Alaska, USA",last seen 2015
+bf_503,bf_503,cubadult,M,subadult;adult,2013,"Alaska, USA",
+bf_504,bf_504,,F,adult,,"Alaska, USA",2014 as adult
+bf_505,bf_505,,F,adult,,"Alaska, USA",2014 as adult
+bf_510,bf_510,,,,,"Alaska, USA",sex unknown
+bf_511,bf_511,,M,adult,,"Alaska, USA",
+bf_600,bf_600,,F,subadult,,"Alaska, USA",
+bf_602,bf_602,,M,subadult,,"Alaska, USA",subadult in 2015
+bf_603,bf_603,,M,adult,,"Alaska, USA",adult in 2015; thought to be bf_68 by cam viewers
+bf_604,bf_604,little,M,adult,2000,"Alaska, USA",
+bf_610,bf_610,,F,subadult,,"Alaska, USA",young sub in 2015
+bf_611,bf_611,,M,adult,,"Alaska, USA",
+bf_613,bf_613,,,,,"Alaska, USA",sex unknown
+bf_614,bf_614,,,,,"Alaska, USA",sex unknown
+bf_615,bf_615,,F,adult,,"Alaska, USA",
+bf_634,bf_634,popeye,M,adult,,"Alaska, USA",adult in 2003
+bf_700,bf_700,marge,F,adult,,"Alaska, USA",young sub 2003
+bf_708,bf_708,amelia,F,adult,2001,"Alaska, USA",
+bf_717,bf_717,silver bear,F,subadult,2014,"Alaska, USA",
+bf_718,bf_718,,F,adult,,"Alaska, USA",
+bf_719,bf_719,,F,subadult,2014,"Alaska, USA","
+"
+bf_720,bf_720,,F,subadult,,"Alaska, USA",2016 as subadult
+bf_744,bf_744,dent,F,adult,2002,"Alaska, USA",
+bf_747,bf_747,,M,adult,,"Alaska, USA",subadult in 2004
+bf_755,bf_755,scare d bear,M,adult,,"Alaska, USA",subadult in 2004
+bf_775,bf_775,lefty,M,adult,,"Alaska, USA",adult in 2004
+bf_813,bf_813,nostril bear,F,adult,,"Alaska, USA",subadult in 2004
+bf_814,bf_814,lurch,M,adult,,"Alaska, USA",adult in 2005; right ear torn off 2015
+bf_818,bf_818,,F,adult,,"Alaska, USA",
+bf_854,bf_854,divot,F,adult,2002,"Alaska, USA",bf_24=father; bf_216=mother
+bf_856,bf_856,,M,adult,,"Alaska, USA",adult in 2006
+bf_868,bf_868,wayne brother 2 ,M,adult,,"Alaska, USA",subadult in 2006; died 2016
+bf_879,bf_879,,M,adult,,"Alaska, USA",subadult in 2006
