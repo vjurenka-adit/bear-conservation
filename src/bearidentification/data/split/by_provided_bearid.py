@@ -9,39 +9,6 @@ from tqdm.notebook import tqdm
 
 from bearidentification.data.split.utils import MyDumper
 
-## REPL
-# bearid_root_path = Path("data/01_raw/BearID")
-# bearid_root_path.exists()
-# os.listdir(bearid_root_path)
-# list(bearid_root_path.glob("chips*.xml"))
-
-# xml_chips_filenames = ["chips_train.xml", "chips_val.xml", "chips_test.xml"]
-# xml_chips_filenames
-
-# filepath = bearid_root_path / xml_chips_filenames[0]
-# filepath
-
-# tree = ET.parse(filepath)
-# root = tree.getroot()
-# root
-
-# chips = root.find("chips").findall("chip")
-# chips[0]
-
-# chip = chips[0]
-# file = chip.get("file")
-# _, origin, encounter, label, chip_filename = file.split("/")
-
-# new_filename = chip_filename.replace("_chip_0", "")
-
-# chips_root_dir = Path(
-#     "data/07_model_output/bearfacesegmentation/chips/all/resized/square_dim_300"
-# )
-
-# fp = chips_root_dir / origin / encounter / label / new_filename
-
-# fp.exists()
-
 
 def parse_xml_chips(filepath: Path, chips_root_dir: Path) -> pd.DataFrame:
     results = []
@@ -181,17 +148,6 @@ def save_all_datasplits(
         )
 
 
-# save_dir = Path(f"data/04_feature/bearidentification/bearid/split/")
-# save_dir.exists()
-
-# save_all_datasplits(
-#     chips_root_dir=chips_root_dir,
-#     bearid_root_path=bearid_root_path,
-#     save_dir=save_dir,
-#     thresholds=THRESHOLDS,
-# )
-
-
 def run(
     chips_root_dir: Path,
     bearid_root_path: Path,
@@ -204,40 +160,3 @@ def run(
         save_dir=save_dir,
         thresholds=thresholds,
     )
-
-
-# df = parse_xml_chips(filepath=filepath, chips_root_dir=chips_root_dir)
-
-# df_train = parse_xml_chips(
-#     filepath=bearid_root_path / "chips_train.xml", chips_root_dir=chips_root_dir
-# )
-# df_val = parse_xml_chips(
-#     filepath=bearid_root_path / "chips_val.xml", chips_root_dir=chips_root_dir
-# )
-# df_test = parse_xml_chips(
-#     filepath=bearid_root_path / "chips_test.xml", chips_root_dir=chips_root_dir
-# )
-# df_train["split"] = "train"
-# df_val["split"] = "val"
-# df_test["split"] = "test"
-
-# df_split = pd.concat([df_train, df_val, df_test])
-
-# df_split.head()
-# df_split[~df_split["path_exists"]]
-# df_split[~df_split["path_exists"]].index
-# df_dropped_split = df_split.drop(df_split[~df_split["path_exists"]].index)
-# df_dropped_split.info()
-# df_split.info()
-
-# dff = build_datasplit(bearid_root_path=bearid_root_path, chips_root_dir=chips_root_dir)
-# dff.head()
-# dff.info()
-
-# resize_dataframe(df=dff, threshold_value=THRESHOLDS["xlarge"]).groupby(
-#     "split"
-# ).size().reset_index(name="counts")
-
-# resize_dataframe(df=dff, threshold_value=THRESHOLDS["nano"]).groupby(
-#     "bear_id"
-# ).size().reset_index(name="counts")
