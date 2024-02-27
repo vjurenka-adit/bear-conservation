@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 
-from bearidentification.data.split.by_individual import run
+from bearidentification.data.split.by_provided_bearid import run
 
 
 def make_cli_parser() -> argparse.ArgumentParser:
@@ -13,26 +13,19 @@ def make_cli_parser() -> argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--train-size-ratio",
-        help="Train size ratio for the split",
-        type=float,
-        default=0.7,
-    )
-    parser.add_argument(
-        "--random-seed",
-        help="Random Seed to initialize the Random Number Generator",
-        type=int,
-        default=0,
-    )
-    parser.add_argument(
         "--save-path",
         help="directory to save the generated splits.",
         default="./data/04_feature/bearidentification/bearid/split/",
     )
     parser.add_argument(
         "--chips-root-dir",
-        help="root directory containing the bearID chips.",
+        help="root directory containing the BearID chips.",
         default="data/07_model_output/bearfacesegmentation/chips/all/resized/square_dim_300/",
+    )
+    parser.add_argument(
+        "--bearid-root-path",
+        help="root directory containing the BearID data.",
+        default="data/01_raw/BearID/",
     )
     parser.add_argument(
         "-log",
@@ -64,8 +57,7 @@ if __name__ == "__main__":
         logging.info(args)
         run(
             chips_root_dir=Path(args["chips_root_dir"]),
+            bearid_root_path=Path(args["bearid_root_path"]),
             save_dir=Path(args["save_path"]),
-            random_seed=args["random_seed"],
-            train_size_ratio=args["train_size_ratio"],
         )
         exit(0)

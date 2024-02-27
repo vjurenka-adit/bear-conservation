@@ -213,7 +213,7 @@ THRESHOLDS = {
     "xlarge": 1,
     "full": 0,
 }
-ALLOWED_ORIGINS = ["brooksFalls"]
+ALLOWED_ORIGINS = ["brooksFalls", "britishColumbia"]
 
 
 def run(

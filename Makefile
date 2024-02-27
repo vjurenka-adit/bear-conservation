@@ -328,7 +328,13 @@ bearidentification_data_merge_generated_chips:
 bearidentification_data_split_by_individual:
 	python ./scripts/bearidentification/data/split/by_individual.py \
 	  --save-path ./data/04_feature/bearidentification/bearid/split/ \
-	  --chips-root-dir ./data/07_model_output/bearfacesegmentation/chips/yolov8/resized/square_dim_300/ \
+	  --chips-root-dir ./data/07_model_output/bearfacesegmentation/chips/all/resized/square_dim_300/ \
+	  --loglevel "info"
+
+bearidentification_data_split_by_provided_bearid:
+	python ./scripts/bearidentification/data/split/by_provided_bearid.py \
+	  --save-path ./data/04_feature/bearidentification/bearid/split/ \
+	  --chips-root-dir ./data/07_model_output/bearfacesegmentation/chips/all/resized/square_dim_300/ \
 	  --loglevel "info"
 
 bearidentification_data_lightglue_keypoints_1024_generate:
