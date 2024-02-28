@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 from bearidentification.data.split.utils import MyDumper
 
