@@ -430,7 +430,7 @@ def make_end_of_epoch_hook(
         tester,
         dataset_dict,
         model_folder,
-        # test_interval=test_interval,
+        test_interval=test_interval,
         patience=patience,
     )
 
@@ -613,14 +613,12 @@ def run(
     }
 
     model_folder = record_path / "model"
-    # TODO: grab patience from config file
-    patience = 10
     end_of_epoch_hook = make_end_of_epoch_hook(
         hooks=hooks,
         tester=tester,
         dataset_dict=dataset_dict,
         model_folder=model_folder,
-        patience=patience,
+        patience=config["patience"],
         test_interval=1,
     )
 
