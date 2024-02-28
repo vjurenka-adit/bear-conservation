@@ -440,3 +440,25 @@ bearidentification_metriclearning_train_baseline_circleloss_full_by_provided_bea
 	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
 	  --config-file "./src/bearidentification/metriclearning/configs/baselines/circleloss/1_baseline_circleloss.yaml" \
 	  --loglevel "info"
+
+bearidentification_metriclearning_train_best_circleloss_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 1 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/best/circleloss/best.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_best_tripletmarginloss_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 1 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/best/tripletmarginloss/best.yaml" \
+	  --loglevel "info"
