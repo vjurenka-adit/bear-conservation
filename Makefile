@@ -337,6 +337,8 @@ bearidentification_data_split_by_provided_bearid:
 	  --chips-root-dir ./data/07_model_output/bearfacesegmentation/chips/all/resized/square_dim_300/ \
 	  --loglevel "info"
 
+bearidentification_data_split: bearidentification_data_split_by_individual bearidentification_data_split_by_provided_bearid
+
 bearidentification_data_lightglue_keypoints_1024_generate:
 	python ./scripts/bearidentification/lightglue/keypoints/generation.py \
 	  --extractor "sift" \
