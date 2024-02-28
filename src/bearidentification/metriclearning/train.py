@@ -108,9 +108,9 @@ def get_transforms(transform_type: str = "bare", config: dict = {}) -> dict:
             [
                 transforms.Resize(imagenet_crop_size),
                 transforms.ColorJitter(
-                    hue=0.1, 
+                    hue=0.1,
                     saturation=(0.9, 1.1),
-                ),                              # Taken from Dolphin ID
+                ),  # Taken from Dolphin ID
                 v2.RandomRotation(degrees=10),  # Taken from Dolphin ID
                 transforms.ToTensor(),
                 transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
@@ -430,7 +430,7 @@ def make_end_of_epoch_hook(
         tester,
         dataset_dict,
         model_folder,
-        test_interval=test_interval,
+        # test_interval=test_interval,
         patience=patience,
     )
 
@@ -441,7 +441,7 @@ def make_trainer(
     batch_size: int,
     loss_funcs: dict,
     train_dataset: BearDataset,
-    mining_funcs: dict,
+    mining_funcs: Optional[dict],
     sampler,
     end_of_iteration_hook,
     end_of_epoch_hook,
@@ -613,11 +613,15 @@ def run(
     }
 
     model_folder = record_path / "model"
+    # TODO: grab patience from config file
+    patience = 10
     end_of_epoch_hook = make_end_of_epoch_hook(
         hooks=hooks,
         tester=tester,
         dataset_dict=dataset_dict,
         model_folder=model_folder,
+        patience=patience,
+        test_interval=1,
     )
 
     trainer = make_trainer(
