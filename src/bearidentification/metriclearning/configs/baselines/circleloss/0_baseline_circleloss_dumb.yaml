@@ -1,0 +1,25 @@
+batch_size: 32
+num_epochs: 1
+model:
+  trunk:
+    backbone: resnet18
+  embedder:
+    embedding_size: 128
+    hidden_layer_sizes:
+      - 256
+loss:
+  type: circleloss
+  config:
+    m: 0.4
+    gamma: 256
+optimizers:
+  embedder:
+    type: adam
+    config:
+      lr: 0.001
+      weight_decay: 0.0
+  trunk:
+    type: adam
+    config:
+      lr: 0.001
+      weight_decay: 0.0

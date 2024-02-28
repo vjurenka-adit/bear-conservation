@@ -372,3 +372,69 @@ bearidentification_data_lightglue_keypoints_256_generate:
 	  --extractor "aliked" \
 	  --n-keypoints 256 \
 	  --loglevel "info"
+
+bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 0 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "nano" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/baselines/circleloss/0_baseline_circleloss_dumb.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_baseline_tripletmarginloss_dumb_nano_by_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 0 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "nano" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/baselines/tripletmarginloss/0_baseline_tripletmarginloss_dumb.yaml" \
+	  --loglevel "info"
+	
+bearidentification_metriclearning_train_baseline_circleloss_nano_by_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 1 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "nano" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/baselines/circleloss/1_baseline_circleloss.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_baseline_tripletmarginloss_nano_by_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 1 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "nano" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/baselines/tripletmarginloss/1_baseline_tripletmarginloss.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_baseline_tripletmarginloss_full_by_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 1 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/baselines/tripletmarginloss/1_baseline_tripletmarginloss.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_baseline_circleloss_full_by_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-number 1 \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/baselines/circleloss/1_baseline_circleloss.yaml" \
+	  --loglevel "info"
