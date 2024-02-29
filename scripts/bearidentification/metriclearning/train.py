@@ -26,6 +26,12 @@ def make_cli_parser() -> argparse.ArgumentParser:
         default=0,
     )
     parser.add_argument(
+        "--experiment-name",
+        help="Name of the experiment",
+        type=str,
+        default="train",
+    )
+    parser.add_argument(
         "--save-dir",
         help="directory to save the training artefacts.",
         default="./data/06_models/bearidentification/metriclearning/",
@@ -116,7 +122,7 @@ if __name__ == "__main__":
                 dataset_size=args["dataset_size"],
                 output_dir=Path(args["save_dir"]),
                 config=config,
-                experiment_number=args["experiment_number"],
+                experiment_name=args["experiment_name"],
                 random_seed=args["random_seed"],
             )
         exit(0)

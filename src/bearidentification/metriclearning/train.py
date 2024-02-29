@@ -16,9 +16,7 @@ import umap
 from cycler import cycler
 from PIL import Image
 from pytorch_metric_learning import losses, miners, samplers, testers, trainers
-from pytorch_metric_learning.utils.accuracy_calculator import (
-    AccuracyCalculator,
-)  # precision_at_k,
+from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from torchvision.transforms import v2
@@ -266,9 +264,61 @@ def make_hooks(record_path: Path, experiment_name: str):
     return logging_presets.get_hook_container(record_keeper=record_keeper)
 
 
+## REPL
+# from pathlib import Path
+
+# experiment_name = "experiment_0_loss_circleloss_size_nano_split_by_provided_bearid"
+# experiment_name = "experiment_0_loss_circleloss_size_nano_split_by_provided_beariv"
+
+# output_dir = Path("./data/06_models/bearidentification/metric_learning/")
+# output_dir.exists()
+# next_experiment_number(experiment_name=experiment_name, output_dir=output_dir)
+
+# path = output_dir / experiment_name
+
+# path.exists()
+# similar_experiment_dirs = list(output_dir.glob(f"{experiment_name}_*"))
+
+# similar_experiment_dirs
+
+# names = [d.name for d in similar_experiment_dirs if d.is_dir()]
+# suffixes = [int(name.split("_")[-1]) for name in names]
+# suffixes
+
+# experiment_number = max(suffixes) + 1
+# suffixes = []
+# max([0, *suffixes])
+
+
+def next_experiment_number(experiment_name: str, output_dir: Path) -> int:
+    """Returns a natural number corresponding to the next experiment number."""
+    if not (output_dir / experiment_name).exists():
+        print("KO")
+        return 0
+    else:
+        similar_experiment_paths = output_dir.glob(f"{experiment_name}_*")
+        similar_experiment_names = [
+            d.name for d in similar_experiment_paths if d.is_dir()
+        ]
+        suffixes = [int(name.split("_")[-1]) for name in similar_experiment_names]
+        experiment_number = max([0, *suffixes]) + 1
+        return experiment_number
+
+
+# experiment_name = "baseline_circleloss_dumb_nano_by_provided_bearid"
+# print(next_experiment_number(experiment_name, output_dir))
+
+
 def get_record_path(experiment_name: str, output_dir: Path) -> Path:
     """Returns the path where all the artefacts will be logged."""
-    return output_dir / experiment_name
+    experiment_number = next_experiment_number(
+        experiment_name=experiment_name,
+        output_dir=output_dir,
+    )
+    if experiment_number == 0:
+        return output_dir / experiment_name
+    else:
+        return output_dir / f"{experiment_name}_{experiment_number}"
 
 
 def make_tester(
@@ -550,7 +600,8 @@ def run(
     dataset_size: str,
     output_dir: Path,
     config: dict,
-    experiment_number: int,
+    # experiment_number: int,
+    experiment_name: str,
     random_seed: int = 0,
 ) -> None:
     """Main entrypoint to setup a training pipeline based on the provided
@@ -561,12 +612,6 @@ def run(
     """
     fix_random_seed(random_seed)
 
-    experiment_name = get_experiment_name(
-        experiment_number=experiment_number,
-        loss_type=config["loss"]["type"],
-        dataset_size=dataset_size,
-        split_type=split_type,
-    )
     logging.info(f"Setting up the experiment {experiment_name}")
     record_path = get_record_path(
         experiment_name=experiment_name,
@@ -585,7 +630,7 @@ def run(
     )
 
     transforms = get_transforms(
-        transform_type="bare" if not "data_augmentation" in config else "augmented",
+        transform_type="bare" if "data_augmentation" not in config else "augmented",
         config=config["data_augmentation"] if "data_augmentation" in config else {},
     )
     logging.info(f"Loaded the transforms: {transforms}")
@@ -684,7 +729,6 @@ def run(
     args = config.copy()
     args_run = {
         "random_seed": random_seed,
-        "experiment_number": experiment_number,
         "experiment_name": experiment_name,
         "datasplit": {
             "dataset_size": dataset_size,

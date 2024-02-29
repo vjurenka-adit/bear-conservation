@@ -378,7 +378,7 @@ bearidentification_data_lightglue_keypoints_256_generate:
 bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 0 \
+	  --experiment-name "baseline_circleloss_dumb_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "nano" \
@@ -389,7 +389,7 @@ bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_provide
 bearidentification_metriclearning_train_baseline_tripletmarginloss_dumb_nano_by_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 0 \
+	  --experiment-name "baseline_tripletmarginloss_dumb_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "nano" \
@@ -400,7 +400,7 @@ bearidentification_metriclearning_train_baseline_tripletmarginloss_dumb_nano_by_
 bearidentification_metriclearning_train_baseline_circleloss_nano_by_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 1 \
+	  --experiment-name "baseline_circleloss_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "nano" \
@@ -411,7 +411,7 @@ bearidentification_metriclearning_train_baseline_circleloss_nano_by_provided_bea
 bearidentification_metriclearning_train_baseline_tripletmarginloss_nano_by_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 1 \
+	  --experiment-name "baseline_tripletmarginloss_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "nano" \
@@ -422,7 +422,7 @@ bearidentification_metriclearning_train_baseline_tripletmarginloss_nano_by_provi
 bearidentification_metriclearning_train_baseline_tripletmarginloss_full_by_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 1 \
+	  --experiment-name "baseline_tripletmarginloss_full_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "full" \
@@ -433,7 +433,7 @@ bearidentification_metriclearning_train_baseline_tripletmarginloss_full_by_provi
 bearidentification_metriclearning_train_baseline_circleloss_full_by_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 1 \
+	  --experiment-name "baseline_circleloss_full_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "full" \
@@ -444,7 +444,7 @@ bearidentification_metriclearning_train_baseline_circleloss_full_by_provided_bea
 bearidentification_metriclearning_train_best_circleloss_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 1 \
+	  --experiment-name "best_circleloss_full_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "full" \
@@ -455,7 +455,7 @@ bearidentification_metriclearning_train_best_circleloss_provided_bearid:
 bearidentification_metriclearning_train_best_tripletmarginloss_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-number 1 \
+	  --experiment-name "best_tripletmarginloss_full_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "full" \
