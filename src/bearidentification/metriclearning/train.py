@@ -127,6 +127,10 @@ def get_transforms(transform_type: str = "bare", config: dict = {}) -> dict:
         raise Exception(f"transform_type {transform_type} not implemented.")
 
 
+def resize_dataframe(df: pd.DataFrame, threshold_value: int):
+    return df.groupby("bear_id").filter(lambda x: len(x) > threshold_value)
+
+
 def make_dataloaders(
     batch_size: int,
     df_split: pd.DataFrame,
@@ -136,22 +140,11 @@ def make_dataloaders(
 
     Each returns a dict with the train, val and test objects associated.
     """
+
     df_train = df_split[df_split["split"] == "train"]
     df_val = df_split[df_split["split"] == "val"]
     df_test = df_split[df_split["split"] == "test"]
     id_mapping = make_id_mapping(df=df_split)
-
-    viz_dataset = BearDataset(
-        df_train,
-        id_mapping,
-        transform=transforms["viz"],
-    )
-    viz_loader = DataLoader(
-        viz_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        drop_last=True,
-    )
 
     train_dataset = BearDataset(
         df_train,
@@ -183,6 +176,18 @@ def make_dataloaders(
     test_loader = DataLoader(
         test_dataset,
         batch_size=batch_size,
+    )
+
+    viz_dataset = BearDataset(
+        df_train,
+        id_mapping,
+        transform=transforms["viz"],
+    )
+    viz_loader = DataLoader(
+        viz_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        drop_last=True,
     )
 
     return {
@@ -234,7 +239,7 @@ def make_visualizer_hook(record_path: Path):
             )
 
         output_filepath = (
-            record_path / "embeddings" / f"umap_{split_name}_epoch_{epoch}.png"
+            record_path / "embeddings" / split_name / f"umap_epoch_{epoch}.png"
         )
         os.makedirs(output_filepath.parent, exist_ok=True)
 
@@ -303,10 +308,6 @@ def next_experiment_number(experiment_name: str, output_dir: Path) -> int:
         suffixes = [int(name.split("_")[-1]) for name in similar_experiment_names]
         experiment_number = max([0, *suffixes]) + 1
         return experiment_number
-
-
-# experiment_name = "baseline_circleloss_dumb_nano_by_provided_bearid"
-# print(next_experiment_number(experiment_name, output_dir))
 
 
 def get_record_path(experiment_name: str, output_dir: Path) -> Path:
@@ -641,6 +642,28 @@ def run(
         transforms=transforms,
     )
 
+    # Making smaller versions of the datasets for visualizing the
+    # embeddings
+    THRESHOLDS = {
+        "nano": 150,
+        "small": 100,
+        "medium": 50,
+        "large": 10,
+        "xlarge": 1,
+        "full": 0,
+    }
+    threshold_value = THRESHOLDS["small"]
+
+    df_split_small = resize_dataframe(df=df_split, threshold_value=threshold_value)
+
+    dataloaders_small = make_dataloaders(
+        batch_size=config["batch_size"],
+        df_split=df_split_small,
+        transforms=transforms,
+    )
+    logging.info(f"df_split_small info:")
+    print(df_split_small.info(verbose=True))
+
     save_sample_batch(
         dataloader=dataloaders["loader"]["viz"], to=record_path / "batch_0.png"
     )
@@ -697,10 +720,13 @@ def run(
         )
         logging.info(f"Initialized the sampler: {sampler}")
 
-    # TODO: use test set instead of val set when not present (example: by_individual split)
+    # TODO: use test set instead of val set when not present (example:
+    # by_individual split)
     dataset_dict = {
         "train": dataloaders["dataset"]["train"],
+        "train_small": dataloaders_small["dataset"]["train"],
         "val": dataloaders["dataset"]["val"],
+        "val_small": dataloaders_small["dataset"]["val"],
     }
 
     model_folder = record_path / "model"
