@@ -1,6 +1,6 @@
 batch_size: 32
-num_epochs: 50
-patience: 10
+num_epochs: 100
+patience: 25
 data_augmentation:
   config: {}
 model:
