@@ -188,7 +188,7 @@ def get_transforms(transform_type: str = "bare", config: dict = {}) -> dict:
                 ),  # Taken from Dolphin ID
                 v2.RandomRotation(degrees=10),  # Taken from Dolphin ID
                 transforms.ToTensor(),
-                transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
+                transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
             ]
         )
         return {
