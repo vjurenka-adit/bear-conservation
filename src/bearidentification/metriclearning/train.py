@@ -1,304 +1,35 @@
 import logging
 import os
-import random
+import shutil
 from pathlib import Path
 from typing import Optional
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import pytorch_metric_learning.utils.logging_presets as logging_presets
 import torch
 import torch.nn as nn
-import torchvision
-import torchvision.models as models
-import umap
-from cycler import cycler
-from PIL import Image
-from pytorch_metric_learning import losses, miners, samplers, testers, trainers
-from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
-from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
-from torchvision.transforms import v2
+from pytorch_metric_learning import losses, miners, samplers, trainers
 
-from bearidentification.metriclearning.embedder import MLP
-from bearidentification.metriclearning.utils import yaml_write
-
-
-def load_datasplit(
-    split_type: str,
-    dataset_size: str,
-    split_root_dir: Path,
-) -> pd.DataFrame:
-    """
-    args:
-    split_type in {by_individual by_provided_bearid}
-    dataset_size in {nano, small, medium, large, xlarge, full}
-
-    Returns a dataframe with the loaded datasplit
-    """
-    filepath = split_root_dir / split_type / dataset_size / "data_split.csv"
-    return pd.read_csv(filepath, sep=";")
-
-
-def make_id_mapping(df: pd.DataFrame) -> pd.DataFrame:
-    """Returns a dataframe that maps a bear label (eg.
-
-    bf_755) to a unique natural number (eg. 0). The dataFrame contains
-    two columns, namely id and label.
-    """
-    return pd.DataFrame(
-        list(enumerate(df["bear_id"].unique())), columns=["id", "label"]
-    )
-
-
-class BearDataset(Dataset):
-    def __init__(self, dataframe, id_mapping, transform=None):
-        self.dataframe = dataframe
-        self.id_mapping = id_mapping
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.dataframe)
-
-    def __getitem__(self, idx):
-        sample = self.dataframe.iloc[idx]
-        image_path = sample.path
-        bear_id = sample.bear_id
-
-        id_value = self.id_mapping.loc[self.id_mapping["label"] == bear_id, "id"].iloc[
-            0
-        ]
-
-        image = Image.open(image_path)
-        if self.transform:
-            image = self.transform(image)
-
-        return image, id_value
-
-
-def get_transforms(transform_type: str = "bare", config: dict = {}) -> dict:
-    """Returns a dict containing the transforms for the following splits:
-    train, val, test and viz (the latter is used for batch visualization).
-
-    transform_type should be in {bare, augmented}"""
-    imagenet_mean = [0.485, 0.456, 0.406]
-    imagenet_std = [0.229, 0.224, 0.225]
-    imagenet_crop_size = (224, 224)
-
-    # Use to persist a batch of data as an artefact
-    transform_viz = transforms.Compose([transforms.ToTensor()])
-    transform_plain = transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
-        ]
-    )
-
-    if transform_type == "bare":
-        return {
-            "viz": transform_viz,
-            "train": transform_plain,
-            "val": transform_plain,
-            "test": transform_plain,
-        }
-    elif transform_type == "augmented":
-        # TODO: make use of the config here
-        transform_train = transforms.Compose(
-            [
-                transforms.Resize(imagenet_crop_size),
-                transforms.ColorJitter(
-                    hue=0.1,
-                    saturation=(0.9, 1.1),
-                ),  # Taken from Dolphin ID
-                v2.RandomRotation(degrees=10),  # Taken from Dolphin ID
-                transforms.ToTensor(),
-                transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
-            ]
-        )
-        return {
-            "viz": transform_viz,
-            # Only the train transform contains the data augmentation
-            "train": transform_train,
-            "val": transform_plain,
-            "test": transform_plain,
-        }
-    else:
-        raise Exception(f"transform_type {transform_type} not implemented.")
-
-
-def resize_dataframe(df: pd.DataFrame, threshold_value: int):
-    return df.groupby("bear_id").filter(lambda x: len(x) > threshold_value)
-
-
-def make_dataloaders(
-    batch_size: int,
-    df_split: pd.DataFrame,
-    transforms: dict,
-) -> dict:
-    """Returns a dict with top level keys in {dataset and loader}.
-
-    Each returns a dict with the train, val and test objects associated.
-    """
-
-    df_train = df_split[df_split["split"] == "train"]
-    df_val = df_split[df_split["split"] == "val"]
-    df_test = df_split[df_split["split"] == "test"]
-    id_mapping = make_id_mapping(df=df_split)
-
-    train_dataset = BearDataset(
-        df_train,
-        id_mapping,
-        transform=transforms["train"],
-    )
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        drop_last=True,
-    )
-
-    val_dataset = BearDataset(
-        df_val,
-        id_mapping,
-        transform=transforms["val"],
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=batch_size,
-    )
-
-    test_dataset = BearDataset(
-        df_test,
-        id_mapping,
-        transform=transforms["test"],
-    )
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-    )
-
-    viz_dataset = BearDataset(
-        df_train,
-        id_mapping,
-        transform=transforms["viz"],
-    )
-    viz_loader = DataLoader(
-        viz_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        drop_last=True,
-    )
-
-    return {
-        "dataset": {
-            "viz": viz_dataset,
-            "train": train_dataset,
-            "val": val_dataset,
-            "test": test_dataset,
-        },
-        "loader": {
-            "viz": viz_loader,
-            "train": train_loader,
-            "val": val_loader,
-            "test": test_loader,
-        },
-    }
-
-
-def make_visualizer_hook(record_path: Path):
-    """Returns a visualizer_hook that renders the embeddings using UMAP on each
-    split."""
-
-    def visualizer_hook(umapper, umap_embeddings, labels, split_name, keyname, *args):
-        epoch = args[0]
-        logging.info(
-            f"UMAP plot - {split_name} split and label set {keyname} - epoch {epoch}"
-        )
-        logging.info(f"args: {args}")
-
-        label_set = np.unique(labels)
-        num_classes = len(label_set)
-
-        fig = plt.figure(figsize=(20, 15))
-        ax = plt.gca()
-        ax.set_title(
-            f"UMAP plot - {split_name} split and label set {keyname} - epoch {epoch}"
-        )
-
-        ax.set_prop_cycle(
-            cycler(
-                "color",
-                [plt.cm.nipy_spectral(i) for i in np.linspace(0, 0.9, num_classes)],
-            )
-        )
-        for i in range(num_classes):
-            idx = labels == label_set[i]
-            plt.plot(
-                umap_embeddings[idx, 0], umap_embeddings[idx, 1], ".", markersize=5
-            )
-
-        output_filepath = (
-            record_path / "embeddings" / split_name / f"umap_epoch_{epoch}.png"
-        )
-        os.makedirs(output_filepath.parent, exist_ok=True)
-
-        plt.savefig(output_filepath)
-        plt.close()
-
-    return visualizer_hook
-
-
-def get_experiment_name(
-    experiment_number: int,
-    loss_type: str,
-    dataset_size: str,
-    split_type: str,
-) -> str:
-    """Returns an experiment name based on the passed parameters."""
-    return f"experiment_{experiment_number}_loss_{loss_type}_size_{dataset_size}_split_{split_type}"
-
-
-def make_hooks(record_path: Path, experiment_name: str):
-    """Creates the hooks for the training pipeline."""
-    record_keeper, _, _ = logging_presets.get_record_keeper(
-        csv_folder=record_path / "training_logs",
-        tensorboard_folder=record_path / "tensorboard",
-        experiment_name=experiment_name,
-    )
-    return logging_presets.get_hook_container(record_keeper=record_keeper)
-
-
-## REPL
-# from pathlib import Path
-
-# experiment_name = "experiment_0_loss_circleloss_size_nano_split_by_provided_bearid"
-# experiment_name = "experiment_0_loss_circleloss_size_nano_split_by_provided_beariv"
-
-# output_dir = Path("./data/06_models/bearidentification/metric_learning/")
-# output_dir.exists()
-# next_experiment_number(experiment_name=experiment_name, output_dir=output_dir)
-
-# path = output_dir / experiment_name
-
-# path.exists()
-# similar_experiment_dirs = list(output_dir.glob(f"{experiment_name}_*"))
-
-# similar_experiment_dirs
-
-# names = [d.name for d in similar_experiment_dirs if d.is_dir()]
-# suffixes = [int(name.split("_")[-1]) for name in names]
-# suffixes
-
-# experiment_number = max(suffixes) + 1
-# suffixes = []
-# max([0, *suffixes])
+from bearidentification.metriclearning.metrics import make_accuracy_calculator
+from bearidentification.metriclearning.utils import (
+    BearDataset,
+    fix_random_seed,
+    get_best_device,
+    get_transforms,
+    load_datasplit,
+    make_dataloaders,
+    make_hooks,
+    make_id_mapping,
+    make_model_dict,
+    make_tester,
+    resize_dataframe,
+    save_sample_batch,
+    yaml_write,
+)
 
 
 def next_experiment_number(experiment_name: str, output_dir: Path) -> int:
     """Returns a natural number corresponding to the next experiment number."""
     if not (output_dir / experiment_name).exists():
-        print("KO")
         return 0
     else:
         similar_experiment_paths = output_dir.glob(f"{experiment_name}_*")
@@ -322,55 +53,11 @@ def get_record_path(experiment_name: str, output_dir: Path) -> Path:
         return output_dir / f"{experiment_name}_{experiment_number}"
 
 
-def make_tester(
-    hooks,
-    record_path: Path,
-    accuracy_calculator: AccuracyCalculator,
-):
-    """Returns a tester used to evaluate and visualize the embeddings."""
-    visualizer = umap.UMAP()
-    visualizer_hook = make_visualizer_hook(record_path=record_path)
-    return testers.GlobalEmbeddingSpaceTester(
-        end_of_testing_hook=hooks.end_of_testing_hook,
-        visualizer=visualizer,
-        visualizer_hook=visualizer_hook,
-        dataloader_num_workers=2,
-        accuracy_calculator=accuracy_calculator,
-    )
-
-
-def make_model_dict(
-    device: torch.device,
-    pretrained_backbone: str = "resnet18",
-    embedding_size: int = 128,
-    hidden_layer_sizes: list[int] = [1024],
-) -> dict[str, nn.Module]:
-    """
-    Returns a dict with the following keys:
-    - embedder: nn.Module - embedder model, usually an MLP.
-    - trunk: nn.Module - the backbone model, usually a pretrained model (like a ResNet).
-    """
-    if pretrained_backbone == "resnet18":
-        trunk = torchvision.models.resnet18(
-            weights=models.ResNet18_Weights.IMAGENET1K_V1
-        )
-    else:
-        raise Exception(f"Cannot make trunk with backbone {pretrained_backbone}")
-
-    trunk_output_size = trunk.fc.in_features
-    trunk.fc = nn.Identity()
-    trunk = torch.nn.DataParallel(trunk.to(device))
-
-    embedder = torch.nn.DataParallel(
-        MLP([trunk_output_size, *hidden_layer_sizes, embedding_size]).to(device)
-    )
-    return {
-        "trunk": trunk,
-        "embedder": embedder,
-    }
-
-
-def make_optimizers(config: dict, trunk: nn.Module, embedder: nn.Module) -> dict:
+def make_optimizers(
+    config: dict,
+    trunk: nn.Module,
+    embedder: nn.Module,
+) -> dict:
     """Returns a dictionnary and one key for the embedder and one for trunk.
 
     The currently supported optimizer types are {adam}.
@@ -519,80 +206,186 @@ def train(trainer, num_epochs: int):
     return trainer.train(num_epochs=num_epochs)
 
 
-def get_best_device() -> torch.device:
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# TODO: use the setup entrypoint in run and use it in the inference
+# entrypoint to load the models and dataloaders
+def setup(
+    split_root_dir: Path,
+    split_type: str,
+    dataset_size: str,
+    config: dict,
+    record_path: Path,
+    experiment_name: str,
+    random_seed: int = 0,
+) -> dict:
+    """Main entrypoint to setup the models and modules for the provided config.
 
+    See src/bearidentification/metriclearning/configs/ for configs
+    examples.
+    """
+    fix_random_seed(random_seed)
 
-def save_sample_batch(dataloader: DataLoader, to: Path) -> None:
-    """Draws a sample from the dataloader and persists it as an image grid in
-    path `to`."""
-    sample = next(iter(dataloader))
-    imgs, _ = sample
-    # create a grid
-    plt.figure(figsize=(30, 15))
-    grid = torchvision.utils.make_grid(nrow=20, tensor=imgs)
-    image = np.transpose(grid, axes=(1, 2, 0))
-    plt.imshow(image)
-    os.makedirs(to.parent, exist_ok=True)
-    plt.savefig(to)
-    plt.close()
+    logging.info(f"Setting up the experiment {experiment_name}")
+    logging.info(f"record_path: {record_path}")
+    device = get_best_device()
+    logging.info(f"Acquired the device {device}")
+    logging.info(
+        f"Loading datasplit from split_type {split_type} and size {dataset_size}"
+    )
+    df_split = load_datasplit(
+        split_type=split_type,
+        dataset_size=dataset_size,
+        split_root_dir=split_root_dir,
+    )
 
+    transforms = get_transforms(
+        transform_type="bare" if "data_augmentation" not in config else "augmented",
+        config=config["data_augmentation"] if "data_augmentation" in config else {},
+    )
+    logging.info(f"Loaded the transforms: {transforms}")
 
-def precision_at_k(knn_labels, query_labels, k: int):
-    """Returns precision at k given the knn_labels and query_labels provided by
-    AccuracyCalculator."""
+    dataloaders = make_dataloaders(
+        batch_size=config["batch_size"],
+        df_split=df_split,
+        transforms=transforms,
+    )
 
-    def label_comparison_fn(gt_labels, current_knn_labels):
-        t = torch.any(current_knn_labels == gt_labels, dim=1)
-        return t[:, None]
+    # Making smaller versions of the datasets for visualizing the
+    # embeddings
+    THRESHOLDS = {
+        "nano": 150,
+        "small": 100,
+        "medium": 50,
+        "large": 10,
+        "xlarge": 1,
+        "full": 0,
+    }
+    threshold_value = THRESHOLDS["small"]
 
-    curr_knn_labels = knn_labels[:, :k]
-    same_label = label_comparison_fn(query_labels[:, None], curr_knn_labels)
-    return torch.sum(same_label).type(torch.float64) / len(same_label)
+    df_split_small = resize_dataframe(df=df_split, threshold_value=threshold_value)
 
+    dataloaders_small = make_dataloaders(
+        batch_size=config["batch_size"],
+        df_split=df_split_small,
+        transforms=transforms,
+    )
+    logging.info(f"df_split_small info:")
+    df_split_small.info(verbose=True)
 
-class BearAccuracyCalculator(AccuracyCalculator):
-    def calculate_precision_at_3(self, knn_labels, query_labels, **kwargs):
-        return precision_at_k(
-            knn_labels=knn_labels,
-            query_labels=query_labels,
-            k=3,
+    hooks = make_hooks(record_path=record_path, experiment_name=experiment_name)
+
+    accuracy_calculator = make_accuracy_calculator()
+    tester = make_tester(
+        hooks=hooks,
+        record_path=record_path,
+        accuracy_calculator=accuracy_calculator,
+    )
+    logging.info(f"Initialized the tester {tester}")
+
+    model_dict = make_model_dict(
+        device=device,
+        pretrained_backbone=config["model"]["trunk"]["backbone"],
+        embedding_size=config["model"]["embedder"]["embedding_size"],
+        hidden_layer_sizes=config["model"]["embedder"]["hidden_layer_sizes"],
+    )
+    logging.info(f"Initialized the model_dict {model_dict}")
+
+    optimizers = make_optimizers(
+        config=config["optimizers"],
+        trunk=model_dict["trunk"],
+        embedder=model_dict["embedder"],
+    )
+    logging.info(f"Initialized the optimizers {optimizers}")
+
+    loss_funcs = make_loss_functions(
+        loss_type=config["loss"]["type"],
+        config=config["loss"]["config"],
+    )
+    logging.info(f"Initialized the loss_funcs: {loss_funcs}")
+
+    mining_funcs = None
+    if "miner" in config:
+        mining_funcs = make_mining_functions(
+            miner_type=config["miner"]["type"],
+            config=config["miner"]["config"],
         )
+        logging.info(f"Initialized the mining_funcs: {mining_funcs}")
 
-    def calculate_precision_at_5(self, knn_labels, query_labels, **kwargs):
-        return precision_at_k(
-            knn_labels=knn_labels,
-            query_labels=query_labels,
-            k=5,
+    id_mapping = make_id_mapping(df=df_split)
+
+    sampler = None
+
+    if "sampler" in config:
+        sampler = make_sampler(
+            sampler_type=config["sampler"]["type"],
+            id_mapping=id_mapping,
+            train_dataset=dataloaders["dataset"]["train"],
+            config=config["sampler"]["config"],
         )
+        logging.info(f"Initialized the sampler: {sampler}")
 
-    def calculate_precision_at_10(self, knn_labels, query_labels, **kwargs):
-        return precision_at_k(
-            knn_labels=knn_labels,
-            query_labels=query_labels,
-            k=10,
-        )
+    # TODO: use test set instead of val set when not present (example:
+    # by_individual split)
+    dataset_dict = {
+        "train": dataloaders["dataset"]["train"],
+        "train_small": dataloaders_small["dataset"]["train"],
+        "val": dataloaders["dataset"]["val"],
+        "val_small": dataloaders_small["dataset"]["val"],
+    }
 
-    def requires_knn(self):
-        return super().requires_knn() + [
-            "precision_at_3",
-            "precision_at_5",
-            "precision_at_10",
-        ]
+    model_folder = record_path / "model"
+    end_of_epoch_hook = make_end_of_epoch_hook(
+        hooks=hooks,
+        tester=tester,
+        dataset_dict=dataset_dict,
+        model_folder=model_folder,
+        patience=config["patience"],
+        test_interval=1,
+    )
+
+    trainer = make_trainer(
+        model_dict=model_dict,
+        optimizers=optimizers,
+        batch_size=config["batch_size"],
+        loss_funcs=loss_funcs,
+        train_dataset=dataloaders["dataset"]["train"],
+        mining_funcs=mining_funcs,
+        sampler=sampler,
+        end_of_iteration_hook=hooks.end_of_iteration_hook,
+        end_of_epoch_hook=end_of_epoch_hook,
+    )
+    logging.info(f"Initialized the trainer {trainer}")
+
+    return {
+        "device": device,
+        "record_path": record_path,
+        "df_split": df_split,
+        "df_split_small": df_split_small,
+        "dataloaders": dataloaders,
+        "dataloaders_small": dataloaders_small,
+        "transforms": transforms,
+        "hooks": hooks,
+        "accuracy_calculator": accuracy_calculator,
+        "model_dict": model_dict,
+        "tester": tester,
+        "optimizers": optimizers,
+        "loss_funcs": loss_funcs,
+        "mining_funcs": mining_funcs,
+        "id_mapping": id_mapping,
+        "sampler": sampler,
+        "dataset_dict": dataset_dict,
+        "model_folder": model_folder,
+        "trainer": trainer,
+    }
 
 
-def make_accuracy_calculator() -> AccuracyCalculator:
-    """Returns an accuracy calculator used to evaluate the performance of the
-    model."""
-    return BearAccuracyCalculator(k="max_bin_count")
-    # return AccuracyCalculator(k="max_bin_count")
-
-
-def fix_random_seed(random_seed: int = 0) -> None:
-    """Fix the random seed across dependencies."""
-    random.seed(random_seed)
-    torch.manual_seed(random_seed)
-    np.random.seed(random_seed)
+def save_best_model_weights(model_folder: Path, output_dir: Path) -> None:
+    """Saves the best model weights in the specified `output_dir`."""
+    embedder_weights_best_path = list(model_folder.glob("embedder_best*"))[0]
+    trunk_weights_best_path = list(model_folder.glob("trunk_best*"))[0]
+    logging.info(f"Copying best model weights in {output_dir}")
+    os.makedirs(output_dir, exist_ok=True)
+    shutil.copy(src=embedder_weights_best_path, dst=output_dir / "embedder.pth")
+    shutil.copy(src=trunk_weights_best_path, dst=output_dir / "trunk.pth")
 
 
 def run(
@@ -767,7 +560,37 @@ def run(
     yaml_write(to=run_config_filepath, data=args)
     logging.info(f"Running the training for {config['num_epochs']} epochs")
     train(trainer=trainer, num_epochs=config["num_epochs"])
+    save_best_model_weights(
+        model_folder=model_folder,
+        output_dir=model_folder / "weights" / "best",
+    )
 
+
+## REPL
+# reorganize weights artifacts
+# model_folder = Path(
+#     "data/06_models/bearidentification/metric_learning/baseline_circleloss_dumb_nano_by_provided_bearid/model"
+# )
+# model_folder.exists()
+
+# best_weights_output_dir = Path(
+#     "data/06_models/bearidentification/metric_learning/baseline_circleloss_dumb_nano_by_provided_bearid/model/weights/best/"
+# )
+
+# # Find best weights in model_folder
+# embedder_weights_best_path = list(model_folder.glob("embedder_best*"))[0]
+# trunk_weights_best_path = list(model_folder.glob("trunk_best*"))[0]
+
+# trunk_weights_best_path
+
+# os.makedirs(best_weights_output_dir, exist_ok=True)
+# shutil.copy(
+#     src=embedder_weights_best_path, dst=best_weights_output_dir / "embedder.pth"
+# )
+# shutil.copy(src=trunk_weights_best_path, dst=best_weights_output_dir / "trunk.pth")
+
+
+# model
 
 ## REPL
 # split_root_dir = Path("data/04_feature/bearidentification/bearid/split/")

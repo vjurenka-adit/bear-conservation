@@ -462,3 +462,45 @@ bearidentification_metriclearning_train_best_tripletmarginloss_provided_bearid:
 	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
 	  --config-file "./src/bearidentification/metriclearning/configs/best/tripletmarginloss/best.yaml" \
 	  --loglevel "info"
+
+bearidentification_metriclearning_predict:
+	python ./scripts/bearidentification/metriclearning/predict.py \
+	  --args-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/args.yaml \
+	  --embedder-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/embedder.pth \
+	  --trunk-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/trunk.pth \
+	  --k 3 \
+	  --knn-index-filepath ./data/07_model_output/bearidentification/metriclearning/baseline_circleloss_nano_by_provided_bearid/knn/knn.index \
+	  --chip-filepath ./data/07_model_output/bearfacesegmentation/chips/all/resized/square_dim_300/brooksFalls/bear_mon_201607/bf_480/P1250243.jpg \
+	  --output-dir ./data/07_model_output/bearidentification/metriclearning/baseline_circleloss_nano_by_provided_bearid/predictions/ \
+	  --loglevel "info"
+
+bearidentification_metriclearning_eval_baseline_nano_circleloss:
+	python ./scripts/bearidentification/metriclearning/eval.py \
+	  --train-run-root-dir ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/ \
+	  --output-dir ./data/07_model_output/bearidentification/metriclearning/baseline_circleloss_nano_by_provided_bearid/ \
+	  --loglevel "info"
+
+bearidentification_metriclearning_eval_all:
+	python ./scripts/bearidentification/metriclearning/eval_all.py \
+	  --train-runs-dir ./data/06_models/bearidentification/metric_learning/ \
+	  --output-dir ./data/07_model_output/bearidentification/metriclearning/ \
+	  --loglevel "info"
+
+# ------------------------------------
+# End to end pipeline command examples
+# ------------------------------------
+
+# TODO: use better metriclearning model
+identify_example:
+	python ./scripts/identify.py \
+	  --source-path ./data/09_external/identify/P1250243.JPG \
+	  --output-dir ./data/07_model_output/identify/example/ \
+	  --k 5 \
+	  --metriclearning-args-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/args.yaml \
+	  --metriclearning-embedder-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/embedder.pth \
+	  --metriclearning-trunk-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/trunk.pth \
+	  --metriclearning-knn-index-filepath ./data/07_model_output/identify/example/knn/knn.index \
+	  --instance-segmentation-weights-filepath ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_baseline/weights/best.pt \
+	  --loglevel "info"
+
+

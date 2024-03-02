@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 
-from bearidentification.metriclearning.train import get_experiment_name, run
+from bearidentification.metriclearning.train import run
 from bearidentification.metriclearning.utils import validate_run_config, yaml_read
 
 
