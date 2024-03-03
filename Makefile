@@ -499,7 +499,7 @@ identify_example:
 	  --metriclearning-args-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/args.yaml \
 	  --metriclearning-embedder-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/embedder.pth \
 	  --metriclearning-trunk-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/trunk.pth \
-	  --metriclearning-knn-index-filepath ./data/07_model_output/identify/example/knn/knn.index \
+	  --metriclearning-knn-index-filepath ./data/07_model_output/identify/.knn/knn.index \
 	  --instance-segmentation-weights-filepath ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_baseline/weights/best.pt \
 	  --loglevel "info"
 

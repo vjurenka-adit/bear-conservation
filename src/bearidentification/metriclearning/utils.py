@@ -1,8 +1,9 @@
 import logging
 import os
 import random
+from collections import defaultdict
 from pathlib import Path
-from typing import OrderedDict
+from typing import Optional, OrderedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -146,60 +147,119 @@ IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
 
-def get_transforms(transform_type: str = "bare", config: dict = {}) -> dict:
+# TODO: move to utils
+def filter_none(xs: list) -> list:
+    return [x for x in xs if x is not None]
+
+
+def get_dtype(dtype_str: str) -> torch.dtype:
+    if dtype_str == "float32":
+        return torch.float32
+    elif dtype_str == "int64":
+        return torch.int64
+    else:
+        logging.warning(
+            f"dtype_str {dtype_str} not implemented, returning default value"
+        )
+        return torch.float32
+
+
+def get_transforms(
+    data_augmentation: dict = {},
+    trunk_preprocessing: dict = {},
+) -> dict:
     """Returns a dict containing the transforms for the following splits:
     train, val, test and viz (the latter is used for batch visualization).
+    """
+    logging.info(f"data_augmentation config: {data_augmentation}")
+    logging.info(f"trunk preprocessing config: {trunk_preprocessing}")
 
-    transform_type should be in {bare, augmented}"""
-    # FIXME: this is related to the model not to imageNET - should come from the config
-    imagenet_crop_size = (224, 224)
+    DEFAULT_CROP_SIZE = 224
+    crop_size = (
+        trunk_preprocessing.get("crop_size", DEFAULT_CROP_SIZE),
+        trunk_preprocessing.get("crop_size", DEFAULT_CROP_SIZE),
+    )
 
-    # Use to persist a batch of data as an artefact
+    # transform to persist a batch of data as an artefact
     transform_viz = transforms.Compose(
         [
-            transforms.Resize(imagenet_crop_size),
+            transforms.Resize(crop_size),
             transforms.ToTensor(),
         ]
     )
 
-    transform_plain = transforms.Compose(
-        [
-            transforms.Resize(imagenet_crop_size),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-        ]
+    mdtype: Optional[torch.dtype] = (
+        get_dtype(trunk_preprocessing["values"].get("dtype", None))
+        if trunk_preprocessing.get("values", None)
+        else None
+    )
+    mscale: Optional[bool] = (
+        trunk_preprocessing["values"].get("scale", None)
+        if trunk_preprocessing.get("values", None)
+        else None
     )
 
-    if transform_type == "bare":
-        return {
-            "viz": transform_viz,
-            "train": transform_plain,
-            "val": transform_plain,
-            "test": transform_plain,
-        }
-    elif transform_type == "augmented":
-        # TODO: make use of the config here
-        transform_train = transforms.Compose(
-            [
-                transforms.Resize(imagenet_crop_size),
-                transforms.ColorJitter(
-                    hue=0.1,
-                    saturation=(0.9, 1.1),
-                ),  # Taken from Dolphin ID
-                v2.RandomRotation(degrees=10),  # Taken from Dolphin ID
-                transforms.ToTensor(),
-                transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-            ]
+    mmean: Optional[list[float]] = (
+        trunk_preprocessing["normalization"].get("mean", None)
+        if trunk_preprocessing.get("normalization", None)
+        else None
+    )
+
+    mstd: Optional[list[float]] = (
+        trunk_preprocessing["normalization"].get("std", None)
+        if trunk_preprocessing.get("normalization", None)
+        else None
+    )
+
+    hue = (
+        data_augmentation["colorjitter"].get("hue", 0)
+        if data_augmentation.get("colorjitter", 0)
+        else 0
+    )
+    saturation = (
+        data_augmentation["colorjitter"].get("saturation", 0)
+        if data_augmentation.get("colorjitter", 0)
+        else 0
+    )
+    degrees = (
+        data_augmentation["rotation"].get("degrees", 0)
+        if data_augmentation.get("rotation", 0)
+        else 0
+    )
+
+    transformations_plain = [
+        transforms.Resize(crop_size),
+        transforms.ToTensor(),
+        v2.ToDtype(dtype=mdtype, scale=mscale) if mdtype and mscale else None,
+        transforms.Normalize(mean=mmean, std=mstd) if mmean and mstd else None,
+    ]
+
+    transformations_train = [
+        transforms.Resize(crop_size),
+        transforms.ColorJitter(
+            hue=hue,
+            saturation=saturation,
         )
-        return {
-            "viz": transform_viz,
-            # Only the train transform contains the data augmentation
-            "train": transform_train,
-            "val": transform_plain,
-            "test": transform_plain,
-        }
-    else:
-        raise Exception(f"transform_type {transform_type} not implemented.")
+        if data_augmentation.get("colorjitter", None)
+        else None,  # Taken from Dolphin ID
+        v2.RandomRotation(degrees=degrees)
+        if data_augmentation.get("rotation", None)
+        else None,  # Taken from Dolphin ID
+        transforms.ToTensor(),
+        v2.ToDtype(dtype=mdtype, scale=mscale) if mdtype and mscale else None,
+        transforms.Normalize(mean=mmean, std=mstd) if mmean and mstd else None,
+    ]
+
+    # Filtering out None transforms
+    transform_plain = transforms.Compose(filter_none(transformations_plain))
+    transform_train = transforms.Compose(filter_none(transformations_train))
+
+    return {
+        "viz": transform_viz,
+        "train": transform_train,
+        "val": transform_plain,
+        "test": transform_plain,
+    }
 
 
 def make_dataloaders(

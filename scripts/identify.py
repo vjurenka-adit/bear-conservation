@@ -1,21 +1,15 @@
 import argparse
 import logging
 import os
+import shutil
 from pathlib import Path
 
 import cv2
-from joblib.logger import shutil
+from tqdm.gui import tqdm
 
-import bearfacedetection
+import bearfacesegmentation.chip
 import bearfacesegmentation.predict
-import bearidentification
 import bearidentification.metriclearning.predict
-from bearfacesegmentation.chip import (
-    crop_from_yolov8,
-    predict_bear_head,
-    resize,
-    square_pad,
-)
 
 
 def make_cli_parser() -> argparse.ArgumentParser:
@@ -84,6 +78,39 @@ def validate_parsed_args(args: dict) -> bool:
     return True
 
 
+def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
+    """Handles one predictions_yolov8.
+
+    Running the bearidentification algorithm on the segmented head. It saves in folders specified in `args` the predictions.
+    """
+    # This is the size used for training the metriclearning
+    # model
+    SQUARE_DIM = 300
+    save_path = args["output_dir"]
+    prediction_save_path = save_path / f"prediction_{i}"
+    chip_save_path = prediction_save_path / f"chip"
+    os.makedirs(chip_save_path, exist_ok=True)
+    cropped_bear_head = bearfacesegmentation.chip.crop_from_yolov8(prediction_yolov8)
+    padded_cropped_head = bearfacesegmentation.chip.square_pad(cropped_bear_head)
+    resized_padded_cropped_head = bearfacesegmentation.chip.resize(
+        padded_cropped_head,
+        dim=(SQUARE_DIM, SQUARE_DIM),
+    )
+    cv2.imwrite(str(chip_save_path / "cropped.png"), cropped_bear_head)
+    cv2.imwrite(str(chip_save_path / "padded.png"), padded_cropped_head)
+    cv2.imwrite(str(chip_save_path / "resized.png"), resized_padded_cropped_head)
+
+    bearidentification.metriclearning.predict.run(
+        trunk_weights_filepath=args["metriclearning_trunk_weights_filepath"],
+        embedder_weights_filepath=args["metriclearning_embedder_weights_filepath"],
+        k=args["k"],
+        args_filepath=args["metriclearning_args_filepath"],
+        knn_index_filepath=args["metriclearning_knn_index_filepath"],
+        chip_filepath=chip_save_path / "resized.png",
+        output_dir=prediction_save_path,
+    )
+
+
 if __name__ == "__main__":
     cli_parser = make_cli_parser()
     args = vars(cli_parser.parse_args())
@@ -92,7 +119,6 @@ if __name__ == "__main__":
         exit(1)
     else:
         logging.info(args)
-        print(args)
         logging.info(
             f"Loading the model weights from {args['instance_segmentation_weights_filepath']}"
         )
@@ -103,52 +129,20 @@ if __name__ == "__main__":
         save_path = args["output_dir"]
         image_filepath = args["source_path"]
         if bearfacesegmentation_model:
-            # TODO: only call the model once instead of twice to save
-            # the segmented face
-            bearfacesegmentation.predict.predict(
+            predictions_yolov8 = bearfacesegmentation.predict.predict(
                 model=bearfacesegmentation_model,
                 source=image_filepath,
                 save_path=save_path,
             )
             shutil.move(
                 src=save_path / "predict" / image_filepath.name,
-                dst=save_path / "bearfacesegmentation.png",
+                dst=save_path / "bearfaces.png",
             )
             shutil.rmtree(save_path / "predict")
-            prediction_yolov8 = predict_bear_head(
-                model=bearfacesegmentation_model,
-                image_filepath=image_filepath,
-                max_det=1,
-            )
-            if not prediction_yolov8 or not prediction_yolov8.masks:
+            if len(predictions_yolov8) == 0 or not predictions_yolov8[0].masks:
                 logging.error(f"Can't find bear heads in {image_filepath}")
             else:
-                chip_save_path = save_path / "chip"
-                os.makedirs(chip_save_path, exist_ok=True)
-                cropped_bear_head = crop_from_yolov8(prediction_yolov8)
-                padded_cropped_head = square_pad(cropped_bear_head)
-                # This is the size used for training the metriclearning
-                # model
-                square_dim = 300
-                resized_padded_cropped_head = resize(
-                    padded_cropped_head,
-                    dim=(square_dim, square_dim),
-                )
-                cv2.imwrite(str(chip_save_path / "cropped.png"), cropped_bear_head)
-                cv2.imwrite(str(chip_save_path / "padded.png"), padded_cropped_head)
-                cv2.imwrite(
-                    str(chip_save_path / "resized.png"), resized_padded_cropped_head
-                )
-                bearidentification.metriclearning.predict.run(
-                    trunk_weights_filepath=args[
-                        "metriclearning_trunk_weights_filepath"
-                    ],
-                    embedder_weights_filepath=args[
-                        "metriclearning_embedder_weights_filepath"
-                    ],
-                    k=args["k"],
-                    args_filepath=args["metriclearning_args_filepath"],
-                    knn_index_filepath=args["metriclearning_knn_index_filepath"],
-                    chip_filepath=chip_save_path / "resized.png",
-                    output_dir=args["output_dir"],
-                )
+                logging.info(f"{len(predictions_yolov8)} bear faces detected")
+                for i, prediction_yolov8 in tqdm(enumerate(predictions_yolov8)):
+                    logging.info(f"Identifying face {i}")
+                    handle_prediction_yolov8(prediction_yolov8, i=i, args=args)

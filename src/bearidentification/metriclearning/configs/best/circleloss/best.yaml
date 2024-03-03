@@ -2,10 +2,23 @@ batch_size: 32
 num_epochs: 100
 patience: 25
 data_augmentation:
-  config: {}
+  colorjitter:
+    hue: [-0.1, 0.1]
+    saturation: [0.9, 1.1]
+  rotation:
+    degrees: [-10, 10]
 model:
   trunk:
     backbone: resnet18
+    # Check this link for details on the preprocessing: https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18
+    preprocessing:
+      values:
+        dtype: float32
+        scale: true
+      crop_size: 224
+      normalization:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
   embedder:
     embedding_size: 128
     hidden_layer_sizes:

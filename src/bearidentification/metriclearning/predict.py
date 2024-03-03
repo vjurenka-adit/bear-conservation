@@ -120,8 +120,8 @@ def run(
     del config["run"]
 
     transforms = get_transforms(
-        transform_type="bare" if "data_augmentation" not in config else "augmented",
-        config=config["data_augmentation"] if "data_augmentation" in config else {},
+        data_augmentation=config.get("data_augmentation", {}),
+        trunk_preprocessing=config["model"]["trunk"].get("preprocessing", {}),
     )
 
     df_split = load_datasplit(
