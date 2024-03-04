@@ -9,8 +9,8 @@ data_augmentation:
     degrees: [-10, 10]
 model:
   trunk:
-    backbone: convnext_tiny
-    # Check this link for details on the preprocessing: https://pytorch.org/vision/stable/models/generated/torchvision.models.convnext_tiny.html#torchvision.models.convnext_tiny
+    backbone: resnet18
+    # Check this link for details on the preprocessing: https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18
     preprocessing:
       values:
         dtype: float32
@@ -37,12 +37,12 @@ optimizers:
     type: adam
     config:
       lr: 0.001
-      weight_decay: 0.00001
+      weight_decay: 0.0
   trunk:
     type: adam
     config:
       lr: 0.0001
-      weight_decay: 0.00001
+      weight_decay: 0.0
 miner:
   type: batcheasyhardminer
   config:

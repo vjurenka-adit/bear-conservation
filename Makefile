@@ -463,6 +463,17 @@ bearidentification_metriclearning_train_best_circleloss_provided_bearid:
 	  --config-file "./src/bearidentification/metriclearning/configs/best/circleloss/best.yaml" \
 	  --loglevel "info"
 
+bearidentification_metriclearning_train_experiment_convnext_tiny_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "experiment_circleloss_convnext_tiny_provided_bear" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/experiments/0_convnext_tiny.yaml" \
+	  --loglevel "info"
+
 bearidentification_metriclearning_train_experiment_convnext_tiny_individual:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
@@ -472,6 +483,17 @@ bearidentification_metriclearning_train_experiment_convnext_tiny_individual:
 	  --dataset-size "full" \
 	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
 	  --config-file "./src/bearidentification/metriclearning/configs/experiments/0_convnext_tiny.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_experiment_resnet18_embedding_size_1024_individual:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "experiment_circleloss_resnet18_embedding_size_1024_individual" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_individual" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/experiments/1_resnet18_emb_size_1024.yaml" \
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_best_circleloss_indidual:
