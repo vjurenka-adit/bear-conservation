@@ -341,13 +341,29 @@ def run(
         )
         logging.info(f"Initialized the sampler: {sampler}")
 
-    # TODO: use test set instead of val set when not present (example:
-    # by_individual split)
+    # We use the test set instead of the val set when the val set is not available
+    # This is the case in the by_individual split
+    len_val = len(dataloaders["dataset"]["val"])
+    logging.info(f"{len_val} datapoints in validation set")
+    if len_val == 0:
+        logging.info("Using the test set instead of the validation set")
+    dataset_val = (
+        dataloaders["dataset"]["test"]
+        if len_val == 0
+        else dataloaders["dataset"]["val"]
+    )
+
+    dataset_val_small = (
+        dataloaders_small["dataset"]["test"]
+        if len_val == 0
+        else dataloaders_small["dataset"]["val"]
+    )
+
     dataset_dict = {
         "train": dataloaders["dataset"]["train"],
         "train_small": dataloaders_small["dataset"]["train"],
-        "val": dataloaders["dataset"]["val"],
-        "val_small": dataloaders_small["dataset"]["val"],
+        "val": dataset_val,
+        "val_small": dataset_val_small,
     }
 
     model_folder = record_path / "model"

@@ -1,7 +1,6 @@
 import logging
 import os
 import random
-from collections import defaultdict
 from pathlib import Path
 from typing import Optional, OrderedDict
 
@@ -397,6 +396,91 @@ def make_tester(
     )
 
 
+def check_backbone(pretrained_backbone: str) -> None:
+    allowed_backbones = {
+        "resnet18",
+        "resnet50",
+        "convnext_tiny",
+        "convnext_base",
+        "efficientnet_v2_s",
+        # "squeezenet1_1",
+        "vit_b_16",
+    }
+    assert (
+        pretrained_backbone in allowed_backbones
+    ), f"pretrained_backbone {pretrained_backbone} is not implemented, only {allowed_backbones}"
+
+
+def make_trunk(pretrained_backbone: str = "resnet18") -> nn.Module:
+    """Returns a nn.Module with pretrained weights using a given
+    pretrained_backbone.
+
+    Note: The currently available backbones are resnet18, resnet50,
+    convnext_tiny, convnext_bas, efficientnet_v2_s, squeezenet1_1, vit_b_16
+    """
+
+    check_backbone(pretrained_backbone)
+
+    if pretrained_backbone == "resnet18":
+        return torchvision.models.resnet18(
+            weights=models.ResNet18_Weights.IMAGENET1K_V1
+        )
+    elif pretrained_backbone == "resnet50":
+        return torchvision.models.resnet50(
+            weights=models.ResNet50_Weights.IMAGENET1K_V1
+        )
+    elif pretrained_backbone == "convnext_tiny":
+        return torchvision.models.convnext_tiny(
+            weights=models.ConvNeXt_Tiny_Weights.IMAGENET1K_V1
+        )
+    elif pretrained_backbone == "convnext_base":
+        return torchvision.models.convnext_base(
+            weights=models.ConvNeXt_Base_Weights.IMAGENET1K_V1
+        )
+    elif pretrained_backbone == "efficientnet_v2_s":
+        return torchvision.models.efficientnet_v2_s(
+            weights=models.EfficientNet_V2_S_Weights.IMAGENET1K_V1
+        )
+    elif pretrained_backbone == "squeezenet1_1":
+        return torchvision.models.squeezenet1_1(
+            weights=models.SqueezeNet1_1_Weights.IMAGENET1K_V1
+        )
+    elif pretrained_backbone == "vit_b_16":
+        return torchvision.models.vit_b_16(
+            weights=models.ViT_B_16_Weights.IMAGENET1K_SWAG_E2E_V1
+        )
+    else:
+        raise Exception(f"Cannot make trunk with backbone {pretrained_backbone}")
+
+
+def make_embedder(
+    pretrained_backbone: str,
+    trunk: nn.Module,
+    embedding_size: int,
+    hidden_layer_sizes: list[int],
+) -> nn.Module:
+    check_backbone(pretrained_backbone)
+
+    if pretrained_backbone in ["resnet18", "resnet50"]:
+        trunk_output_size = trunk.fc.in_features
+        trunk.fc = nn.Identity()
+        return MLP([trunk_output_size, *hidden_layer_sizes, embedding_size])
+    elif pretrained_backbone in ["convnext_tiny", "convnext_base"]:
+        trunk_output_size = trunk.classifier[-1].in_features
+        trunk.classifier[-1] = nn.Identity()
+        return MLP([trunk_output_size, *hidden_layer_sizes, embedding_size])
+    elif pretrained_backbone == "efficientnet_v2_s":
+        trunk_output_size = trunk.classifier[-1].in_features
+        trunk.classifier[-1] = nn.Identity()
+        return MLP([trunk_output_size, *hidden_layer_sizes, embedding_size])
+    elif pretrained_backbone == "vit_b_16":
+        trunk_output_size = trunk.heads.head.in_features
+        trunk.heads.head = nn.Identity()
+        return MLP([trunk_output_size, *hidden_layer_sizes, embedding_size])
+    else:
+        raise Exception(f"{pretrained_backbone} embedder not implemented yet")
+
+
 def make_model_dict(
     device: torch.device,
     pretrained_backbone: str = "resnet18",
@@ -408,20 +492,18 @@ def make_model_dict(
     - embedder: nn.Module - embedder model, usually an MLP.
     - trunk: nn.Module - the backbone model, usually a pretrained model (like a ResNet).
     """
-    if pretrained_backbone == "resnet18":
-        trunk = torchvision.models.resnet18(
-            weights=models.ResNet18_Weights.IMAGENET1K_V1
-        )
-    else:
-        raise Exception(f"Cannot make trunk with backbone {pretrained_backbone}")
 
-    trunk_output_size = trunk.fc.in_features
-    trunk.fc = nn.Identity()
-    trunk = torch.nn.DataParallel(trunk.to(device))
-
-    embedder = torch.nn.DataParallel(
-        MLP([trunk_output_size, *hidden_layer_sizes, embedding_size]).to(device)
+    trunk = make_trunk(pretrained_backbone=pretrained_backbone)
+    embedder = make_embedder(
+        pretrained_backbone=pretrained_backbone,
+        embedding_size=embedding_size,
+        hidden_layer_sizes=hidden_layer_sizes,
+        trunk=trunk,
     )
+
+    trunk = torch.nn.DataParallel(trunk.to(device))
+    embedder = torch.nn.DataParallel(embedder.to(device))
+
     return {
         "trunk": trunk,
         "embedder": embedder,

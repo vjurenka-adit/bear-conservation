@@ -386,6 +386,17 @@ bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_provide
 	  --config-file "./src/bearidentification/metriclearning/configs/baselines/circleloss/0_baseline_circleloss_dumb.yaml" \
 	  --loglevel "info"
 
+bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_individual:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "baseline_circleloss_dumb_nano_by_individual" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_individual" \
+	  --dataset-size "nano" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/baselines/circleloss/0_baseline_circleloss_dumb.yaml" \
+	  --loglevel "info"
+
 bearidentification_metriclearning_train_baseline_tripletmarginloss_dumb_nano_by_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
@@ -447,6 +458,28 @@ bearidentification_metriclearning_train_best_circleloss_provided_bearid:
 	  --experiment-name "best_circleloss_full_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/best/circleloss/best.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_experiment_convnext_tiny_individual:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "experiment_circleloss_convnext_tiny_individual" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_individual" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/experiments/0_convnext_tiny.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_best_circleloss_indidual:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "best_circleloss_full_by_provided_bearid" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_individual" \
 	  --dataset-size "full" \
 	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
 	  --config-file "./src/bearidentification/metriclearning/configs/best/circleloss/best.yaml" \
