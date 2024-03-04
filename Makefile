@@ -496,6 +496,28 @@ bearidentification_metriclearning_train_experiment_resnet18_embedding_size_1024_
 	  --config-file "./src/bearidentification/metriclearning/configs/experiments/1_resnet18_emb_size_1024.yaml" \
 	  --loglevel "info"
 
+bearidentification_metriclearning_train_experiment_arcfaceloss_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "experiment_arcfaceloss_resnet18_provided_bearid" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/experiments/3_arcfaceloss.yaml" \
+	  --loglevel "info"
+
+bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_tiny_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "experiment_arcfaceloss_resnet18_provided_bearid" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/experiments/4_arcfaceloss_convnext_tiny.yaml" \
+	  --loglevel "info"
+
 bearidentification_metriclearning_train_best_circleloss_indidual:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \

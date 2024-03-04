@@ -1,0 +1,62 @@
+batch_size: 32
+num_epochs: 100
+patience: 25
+data_augmentation:
+  colorjitter:
+    hue: [-0.1, 0.1]
+    saturation: [0.9, 1.1]
+  rotation:
+    degrees: [-10, 10]
+model:
+  trunk:
+    backbone: resnet18
+    # Check this link for details on the preprocessing: https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18
+    preprocessing:
+      values:
+        dtype: float32
+        scale: true
+      crop_size: 224
+      normalization:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+  embedder:
+    embedding_size: 1024
+    hidden_layer_sizes:
+      - 2048
+loss:
+  # Check documentation here: https://kevinmusgrave.github.io/pytorch-metric-learning/losses/#arcfaceloss
+  type: arcfaceloss
+  config:
+    # embedding size copied from embedder
+    embedding_size: 1024
+    # Number of classes in the training dataset - only work on provided_bearid/full
+    num_classes: 132
+    # Params used in the paper: https://arxiv.org/pdf/1801.07698.pdf
+    margin: 28.6
+    scale: 64
+sampler:
+  type: mperclass
+  config:
+    m: 4
+optimizers:
+  losses:
+    metric_loss:
+      type: adam
+      config:
+        lr: 0.001
+        weight_decay: 0.0
+  embedder:
+    type: adam
+    config:
+      lr: 0.001
+      weight_decay: 0.0
+  trunk:
+    type: adam
+    config:
+      lr: 0.0001
+      weight_decay: 0.0
+miner:
+  type: batcheasyhardminer
+  config:
+    pos_strategy: semihard
+    neg_strategy: hard

@@ -53,36 +53,86 @@ def get_record_path(experiment_name: str, output_dir: Path) -> Path:
         return output_dir / f"{experiment_name}_{experiment_number}"
 
 
+def make_embedder_optimizer(config: dict, embedder: nn.Module) -> torch.optim.Optimizer:
+    """Makes the embedder optimizer."""
+    embedder_config = config["config"]
+    if config["type"] == "adam":
+        return torch.optim.Adam(
+            embedder.parameters(),
+            lr=embedder_config["lr"],
+            weight_decay=embedder_config.get("weight_decay", 0.0),
+        )
+    else:
+        raise Exception("The only supported optimizer type is Adam for now.")
+
+
+def make_trunk_optimizer(config: dict, trunk: nn.Module) -> torch.optim.Optimizer:
+    """Makes the trunk optimizer."""
+    if config["type"] == "adam":
+        trunk_config = config["config"]
+        return torch.optim.Adam(
+            trunk.parameters(),
+            lr=trunk_config["lr"],
+            weight_decay=trunk_config.get("weight_decay", 0.0),
+        )
+    else:
+        raise Exception("The only supported optimizer type is Adam for now.")
+
+
+def make_losses_optimizers(
+    config: dict, loss_funcs: dict
+) -> dict[str, torch.optim.Optimizer]:
+    """Makes the losses optimizers.
+
+    Sometimes, losses have learnable parameters. One example is
+    ArcFaceLoss.
+    """
+    result = {}
+    for loss_type, optimizer_config in config.items():
+        assert (
+            loss_type in loss_funcs
+        ), f"loss type {loss_type} is not a key in {loss_funcs}"
+        if optimizer_config["type"] == "adam":
+            optimizer = torch.optim.Adam(
+                loss_funcs[loss_type].parameters(),
+                lr=optimizer_config["config"]["lr"],
+                weight_decay=optimizer_config["config"]["weight_decay"],
+            )
+            result[f"{loss_type}_optimizer"] = optimizer
+        else:
+            raise Exception("The only supported optimizer type is Adam for now.")
+    return result
+
+
 def make_optimizers(
     config: dict,
     trunk: nn.Module,
     embedder: nn.Module,
+    loss_funcs: dict,
 ) -> dict:
     """Returns a dictionnary and one key for the embedder and one for trunk.
 
     The currently supported optimizer types are {adam}.
     """
-    embedder_config = config["embedder"]["config"]
-    trunk_config = config["trunk"]["config"]
 
-    if config["embedder"]["type"] == "adam" and config["trunk"]["type"] == "adam":
-        embedder_optimizer = torch.optim.Adam(
-            embedder.parameters(),
-            lr=embedder_config["lr"],
-            weight_decay=embedder_config["weight_decay"],
-        )
-        trunk_optimizer = torch.optim.Adam(
-            trunk.parameters(),
-            lr=trunk_config["lr"],
-            weight_decay=trunk_config["weight_decay"],
-        )
+    embedder_optimizer = make_embedder_optimizer(
+        config=config["embedder"],
+        embedder=embedder,
+    )
+    trunk_optimizer = make_trunk_optimizer(
+        config=config["trunk"],
+        trunk=trunk,
+    )
+    losses_optimizers = make_losses_optimizers(
+        config=config["losses"],
+        loss_funcs=loss_funcs,
+    )
 
-        return {
-            "trunk_optimizer": trunk_optimizer,
-            "embedder_optimizer": embedder_optimizer,
-        }
-    else:
-        raise Exception(f"The only supported optimizer type is Adam for now.")
+    return {
+        "trunk_optimizer": trunk_optimizer,
+        "embedder_optimizer": embedder_optimizer,
+        **losses_optimizers,
+    }
 
 
 def make_loss_functions(loss_type: str, config: dict) -> dict:
@@ -98,6 +148,14 @@ def make_loss_functions(loss_type: str, config: dict) -> dict:
         return {"metric_loss": metric_loss}
     elif loss_type == "tripletmarginloss":
         metric_loss = losses.TripletMarginLoss(margin=config["margin"])
+        return {"metric_loss": metric_loss}
+    elif loss_type == "arcfaceloss":
+        metric_loss = losses.ArcFaceLoss(
+            num_classes=config["num_classes"],
+            embedding_size=config["embedding_size"],
+            margin=config["margin"],
+            scale=config["scale"],
+        )
         return {"metric_loss": metric_loss}
     else:
         raise Exception(f"loss_type {loss_type} not yet implemented")
@@ -307,18 +365,19 @@ def run(
     )
     logging.info(f"Initialized the model_dict {model_dict}")
 
-    optimizers = make_optimizers(
-        config=config["optimizers"],
-        trunk=model_dict["trunk"],
-        embedder=model_dict["embedder"],
-    )
-    logging.info(f"Initialized the optimizers {optimizers}")
-
     loss_funcs = make_loss_functions(
         loss_type=config["loss"]["type"],
         config=config["loss"]["config"],
     )
     logging.info(f"Initialized the loss_funcs: {loss_funcs}")
+
+    optimizers = make_optimizers(
+        config=config["optimizers"],
+        trunk=model_dict["trunk"],
+        embedder=model_dict["embedder"],
+        loss_funcs=loss_funcs,
+    )
+    logging.info(f"Initialized the optimizers {optimizers}")
 
     mining_funcs = None
     if "miner" in config:

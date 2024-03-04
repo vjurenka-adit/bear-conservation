@@ -7,7 +7,12 @@ import pandas as pd
 import yaml
 from tqdm import tqdm
 
-from bearidentification.data.split.utils import MyDumper
+from bearidentification.data.split.utils import (
+    ALLOWED_ORIGINS,
+    THRESHOLDS,
+    MyDumper,
+    resize_dataframe,
+)
 
 
 def list_subdirs(dir: Path):
@@ -37,10 +42,6 @@ def collect_samples(chips_root_dir: Path, allowed_origins: list[str]) -> list[di
     return samples
 
 
-def resize_dataframe(df: pd.DataFrame, threshold_value: int):
-    return df.groupby("bear_id").filter(lambda x: len(x) > threshold_value)
-
-
 def filter_dataframe(df: pd.DataFrame) -> dict:
     """Filters the dataframe based on rules.
 
@@ -57,7 +58,9 @@ def filter_dataframe(df: pd.DataFrame) -> dict:
 
 
 def train_test_split(
-    df_raw: pd.DataFrame, train_size_ratio: float = 0.7, random_seed: int = 0
+    df_raw: pd.DataFrame,
+    train_size_ratio: float = 0.7,
+    random_seed: int = 0,
 ) -> pd.DataFrame:
     """Adds a `split` column with values in {train, test} depending on the
     train_size_ratio and the random_seed.
@@ -125,7 +128,8 @@ def build_datasplit(
     train_size_ratio: float = 0.7,
 ) -> pd.DataFrame:
     samples = collect_samples(
-        chips_root_dir=chips_root_dir, allowed_origins=allowed_origins
+        chips_root_dir=chips_root_dir,
+        allowed_origins=allowed_origins,
     )
     df_raw = pd.DataFrame(samples)
     df_resized = resize_dataframe(df_raw, threshold_value=threshold_value)
@@ -202,18 +206,6 @@ def save_all_datasplits(
             random_seed=random_seed,
             train_size_ratio=train_size_ratio,
         )
-
-
-# threshold key to number of individual by bear id.
-THRESHOLDS = {
-    "nano": 150,
-    "small": 100,
-    "medium": 50,
-    "large": 10,
-    "xlarge": 1,
-    "full": 0,
-}
-ALLOWED_ORIGINS = ["brooksFalls", "britishColumbia"]
 
 
 def run(
