@@ -402,6 +402,7 @@ def check_backbone(pretrained_backbone: str) -> None:
         "resnet50",
         "convnext_tiny",
         "convnext_base",
+        "convnext_large",
         "efficientnet_v2_s",
         # "squeezenet1_1",
         "vit_b_16",
@@ -436,6 +437,10 @@ def make_trunk(pretrained_backbone: str = "resnet18") -> nn.Module:
     elif pretrained_backbone == "convnext_base":
         return torchvision.models.convnext_base(
             weights=models.ConvNeXt_Base_Weights.IMAGENET1K_V1
+        )
+    elif pretrained_backbone == "convnext_large":
+        return torchvision.models.convnext_large(
+            weights=models.ConvNeXt_Large_Weights.IMAGENET1K_V1
         )
     elif pretrained_backbone == "efficientnet_v2_s":
         return torchvision.models.efficientnet_v2_s(

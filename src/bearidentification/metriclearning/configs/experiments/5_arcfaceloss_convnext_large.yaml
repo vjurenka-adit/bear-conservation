@@ -1,5 +1,5 @@
 batch_size: 32
-num_epochs: 100
+num_epochs: 200
 patience: 25
 data_augmentation:
   colorjitter:
@@ -9,8 +9,8 @@ data_augmentation:
     degrees: [-10, 10]
 model:
   trunk:
-    backbone: convnext_tiny
-    # Check this link for details on the preprocessing: https://pytorch.org/vision/stable/models/generated/torchvision.models.convnext_tiny.html#torchvision.models.convnext_tiny
+    backbone: convnext_large
+    # Check this link for details on the preprocessing: https://pytorch.org/vision/stable/models/generated/torchvision.models.convnext_large.html#torchvision.models.convnext_large
     preprocessing:
       values:
         dtype: float32

@@ -518,6 +518,17 @@ bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_tiny_pro
 	  --config-file "./src/bearidentification/metriclearning/configs/experiments/4_arcfaceloss_convnext_tiny.yaml" \
 	  --loglevel "info"
 
+bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_large_provided_bearid:
+	python ./scripts/bearidentification/metriclearning/train.py \
+	  --random-seed 0 \
+	  --experiment-name "experiment_arcfaceloss_convnext_large_provided_bearid" \
+	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+	  --split-type "by_provided_bearid" \
+	  --dataset-size "full" \
+	  --save-dir "./data/06_models/bearidentification/metric_learning/" \
+	  --config-file "./src/bearidentification/metriclearning/configs/experiments/5_arcfaceloss_convnext_large.yaml" \
+	  --loglevel "info"
+
 bearidentification_metriclearning_train_best_circleloss_indidual:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
