@@ -124,7 +124,7 @@ def make_optimizers(
         trunk=trunk,
     )
     losses_optimizers = make_losses_optimizers(
-        config=config["losses"],
+        config=config.get("losses", {}),
         loss_funcs=loss_funcs,
     )
 

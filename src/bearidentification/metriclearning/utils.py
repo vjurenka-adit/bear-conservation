@@ -536,11 +536,18 @@ def save_sample_batch(dataloader: DataLoader, to: Path) -> None:
     plt.close()
 
 
-def make_hooks(record_path: Path, experiment_name: str):
+def make_hooks(
+    record_path: Path,
+    experiment_name: str,
+    primary_metric: str = "precision_at_1",
+):
     """Creates the hooks for the training pipeline."""
     record_keeper, _, _ = logging_presets.get_record_keeper(
         csv_folder=record_path / "training_logs",
         tensorboard_folder=record_path / "tensorboard",
         experiment_name=experiment_name,
     )
-    return logging_presets.get_hook_container(record_keeper=record_keeper)
+    return logging_presets.get_hook_container(
+        record_keeper=record_keeper,
+        primary_metric=primary_metric,
+    )
