@@ -510,7 +510,7 @@ bearidentification_metriclearning_train_experiment_arcfaceloss_provided_bearid:
 bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_tiny_provided_bearid:
 	python ./scripts/bearidentification/metriclearning/train.py \
 	  --random-seed 0 \
-	  --experiment-name "experiment_arcfaceloss_resnet18_provided_bearid" \
+	  --experiment-name "experiment_arcfaceloss_convnext_tiny_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
 	  --split-type "by_provided_bearid" \
 	  --dataset-size "full" \
