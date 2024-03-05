@@ -573,16 +573,14 @@ bearidentification_metriclearning_predict:
 	  --output-dir ./data/07_model_output/bearidentification/metriclearning/baseline_circleloss_nano_by_provided_bearid/predictions/ \
 	  --loglevel "info"
 
-bearidentification_metriclearning_eval_baseline_nano_circleloss:
-	python ./scripts/bearidentification/metriclearning/eval.py \
-	  --train-run-root-dir ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/ \
-	  --output-dir ./data/07_model_output/bearidentification/metriclearning/baseline_circleloss_nano_by_provided_bearid/ \
-	  --loglevel "info"
 
-bearidentification_metriclearning_eval_all:
+bearidentification_metriclearning_eval_summary:
 	python ./scripts/bearidentification/metriclearning/eval_all.py \
 	  --train-runs-dir ./data/06_models/bearidentification/metric_learning/ \
 	  --output-dir ./data/07_model_output/bearidentification/metriclearning/ \
+	  --loglevel "info"
+	python ./scripts/bearidentification/metriclearning/eval_summary.py \
+	  --evaluations-root-dir ./data/07_model_output/bearidentification/metriclearning/ \
 	  --loglevel "info"
 
 # ------------------------------------

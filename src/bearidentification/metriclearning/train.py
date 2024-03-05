@@ -15,6 +15,9 @@ from bearidentification.metriclearning.utils import (
     BearDataset,
     fix_random_seed,
     get_best_device,
+    get_best_model_filepath,
+    get_best_weights,
+    get_best_weights_filepaths,
     get_transforms,
     load_datasplit,
     make_dataloaders,
@@ -266,25 +269,6 @@ def train(trainer, num_epochs: int):
     return trainer.train(num_epochs=num_epochs)
 
 
-def get_best_weights_filepaths(model_folder: Path) -> dict:
-    """Returns the best weights filepaths for the trunk and the embedder."""
-    embedder_weights_best_path = list(model_folder.glob("embedder_best*"))[0]
-    trunk_weights_best_path = list(model_folder.glob("trunk_best*"))[0]
-    return {
-        "trunk": trunk_weights_best_path,
-        "embedder": embedder_weights_best_path,
-    }
-
-
-def get_best_weights(model_folder: Path) -> dict:
-    """Returns the best weights for the trunk and the embedder."""
-    best_weights_filepaths = get_best_weights_filepaths(model_folder=model_folder)
-    return {
-        "trunk": torch.load(best_weights_filepaths["trunk"]),
-        "embedder": torch.load(best_weights_filepaths["embedder"]),
-    }
-
-
 def save_best_model_weights(model_folder: Path, output_dir: Path) -> None:
     """Saves the best model weights in the specified `output_dir`."""
     best_weights_filepaths = get_best_weights_filepaths(model_folder=model_folder)
@@ -513,7 +497,7 @@ def run(
         output_dir=best_model_weights_output_dir,
     )
 
-    package_filepath = best_model_weights_output_dir / "model.pth"
+    package_filepath = get_best_model_filepath(train_run_root_dir=record_path)
     logging.info(f"Packaging the model artifacts in one file in {package_filepath}")
     packaged = package_model(train_run_root_dir=record_path)
     torch.save(packaged, package_filepath)

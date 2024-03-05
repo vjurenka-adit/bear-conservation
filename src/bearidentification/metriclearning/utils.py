@@ -63,18 +63,26 @@ def validate_run_config(config: dict) -> bool:
 
 def load_weights(
     network: torch.nn.Module,
-    weights_filepath: Path,
+    weights_filepath: Optional[Path] = None,
+    weights: Optional[OrderedDict] = None,
     prefix: str = "",
 ) -> torch.nn.Module:
     """Loads the network weights.
 
     Returns the network.
     """
-    assert weights_filepath.exists(), f"Invalid model_filepath {weights_filepath}"
-    weights = torch.load(weights_filepath)
-    prefixed_weights = prefix_keys_with(weights, prefix=prefix)
-    network.load_state_dict(state_dict=prefixed_weights)
-    return network
+    if weights:
+        prefixed_weights = prefix_keys_with(weights, prefix=prefix)
+        network.load_state_dict(state_dict=prefixed_weights)
+        return network
+    elif weights_filepath:
+        assert weights_filepath.exists(), f"Invalid model_filepath {weights_filepath}"
+        weights = torch.load(weights_filepath)
+        prefixed_weights = prefix_keys_with(weights, prefix=prefix)
+        network.load_state_dict(state_dict=prefixed_weights)
+        return network
+    else:
+        raise Exception(f"Should provide at least weights or weights_filepath")
 
 
 def prefix_keys_with(weights: OrderedDict, prefix: str = "module.") -> OrderedDict:
@@ -556,3 +564,27 @@ def make_hooks(
         record_keeper=record_keeper,
         primary_metric=primary_metric,
     )
+
+
+def get_best_weights_filepaths(model_folder: Path) -> dict:
+    """Returns the best weights filepaths for the trunk and the embedder."""
+    embedder_weights_best_path = list(model_folder.glob("embedder_best*"))[0]
+    trunk_weights_best_path = list(model_folder.glob("trunk_best*"))[0]
+    return {
+        "trunk": trunk_weights_best_path,
+        "embedder": embedder_weights_best_path,
+    }
+
+
+def get_best_weights(model_folder: Path) -> dict:
+    """Returns the best weights for the trunk and the embedder."""
+    best_weights_filepaths = get_best_weights_filepaths(model_folder=model_folder)
+    return {
+        "trunk": torch.load(best_weights_filepaths["trunk"]),
+        "embedder": torch.load(best_weights_filepaths["embedder"]),
+    }
+
+
+def get_best_model_filepath(train_run_root_dir: Path) -> Path:
+    """Returns the best model filepath."""
+    return train_run_root_dir / "model" / "weights" / "best" / "model.pth"

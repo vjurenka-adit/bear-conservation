@@ -41,6 +41,17 @@ def validate_parsed_args(args: dict) -> bool:
     return True
 
 
+def eval_all(train_runs_dir: Path) -> None:
+    """Evaluates all models from train_runs_dir."""
+    train_runs_dir = args["train_runs_dir"]
+    for train_run_root_dir in tqdm(os.listdir(train_runs_dir)):
+        logging.info(f"Evaluating model {train_run_root_dir}")
+        run(
+            train_run_root_dir=train_runs_dir / train_run_root_dir,
+            output_dir=args["output_dir"] / train_run_root_dir,
+        )
+
+
 if __name__ == "__main__":
     cli_parser = make_cli_parser()
     args = vars(cli_parser.parse_args())
@@ -49,10 +60,4 @@ if __name__ == "__main__":
         exit(1)
     else:
         logging.info(args)
-        train_runs_dir = args["train_runs_dir"]
-        for train_run_root_dir in tqdm(os.listdir(train_runs_dir)):
-            logging.info(f"Evaluating model {train_run_root_dir}")
-            run(
-                train_run_root_dir=train_runs_dir / train_run_root_dir,
-                output_dir=args["output_dir"] / train_run_root_dir,
-            )
+        eval_all(train_runs_dir=args["train_runs_dir"])

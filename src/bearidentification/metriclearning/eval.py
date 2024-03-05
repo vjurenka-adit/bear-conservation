@@ -5,22 +5,22 @@ import shutil
 from pathlib import Path
 
 import pandas as pd
+import torch
 
 from bearidentification.metriclearning.metrics import make_accuracy_calculator
 from bearidentification.metriclearning.utils import (
     get_best_device,
+    get_best_model_filepath,
     get_transforms,
-    load_datasplit,
     load_weights,
     make_dataloaders,
     make_hooks,
     make_model_dict,
     make_tester,
-    yaml_read,
+    yaml_write,
 )
 
 
-# TODO: get rid of predict.py, move some code to eval.py
 def accuracies_to_df(accuracies: dict) -> pd.DataFrame:
     """Creates a dataframe that collects all accuracies from the different
     splits."""
@@ -35,27 +35,14 @@ def run(
     output_dir: Path,
 ) -> None:
     """Main entrypoint to run the evaluation."""
-    trunk_weights_filepath = (
-        train_run_root_dir / "model" / "weights" / "best" / "trunk.pth"
-    )
-    embedder_weights_filepath = (
-        train_run_root_dir / "model" / "weights" / "best" / "embedder.pth"
-    )
+    best_model_filepath = get_best_model_filepath(train_run_root_dir=train_run_root_dir)
     assert (
-        trunk_weights_filepath.exists()
-    ), f"trunk_filepath does not exist {trunk_weights_filepath}"
-    assert (
-        embedder_weights_filepath.exists()
-    ), f"embedder_filepath does not exist {embedder_weights_filepath}"
+        best_model_filepath.exists()
+    ), f"best model filepath does not exist {best_model_filepath}"
+    loaded_model = torch.load(best_model_filepath)
     device = get_best_device()
-    args_filepath = train_run_root_dir / "args.yaml"
-    assert args_filepath.exists(), f"args_filepath does not exist {args_filepath}"
-
-    args = yaml_read(args_filepath)
+    args = loaded_model["args"]
     experiment_name = args["run"]["experiment_name"]
-    dataset_size = args["run"]["datasplit"]["dataset_size"]
-    split_type = args["run"]["datasplit"]["split_type"]
-    split_root_dir = Path(args["run"]["datasplit"]["split_root_dir"])
     config = args.copy()
     del config["run"]
 
@@ -64,11 +51,9 @@ def run(
         trunk_preprocessing=config["model"]["trunk"].get("preprocessing", {}),
     )
 
-    df_split = load_datasplit(
-        split_type=split_type,
-        dataset_size=dataset_size,
-        split_root_dir=split_root_dir,
-    )
+    logging.info(f"loading the df_split")
+    df_split = pd.DataFrame(loaded_model["data_split"])
+    df_split.info()
 
     dataloaders = make_dataloaders(
         batch_size=config["batch_size"],
@@ -83,16 +68,18 @@ def run(
         hidden_layer_sizes=config["model"]["embedder"]["hidden_layer_sizes"],
     )
 
+    trunk_weights = loaded_model["trunk"]
     trunk = model_dict["trunk"]
     trunk = load_weights(
         network=trunk,
-        weights_filepath=trunk_weights_filepath,
+        weights=trunk_weights,
         prefix="module.",
     )
+    embedder_weights = loaded_model["embedder"]
     embedder = model_dict["embedder"]
     embedder = load_weights(
         network=embedder,
-        weights_filepath=embedder_weights_filepath,
+        weights=embedder_weights,
         prefix="module.",
     )
 
@@ -124,3 +111,4 @@ def run(
     df_metrics.to_csv(output_dir / "evaluation" / "metrics.csv")
     shutil.rmtree(output_dir / "training_logs")
     shutil.rmtree(output_dir / "tensorboard")
+    yaml_write(to=output_dir / "args.yaml", data=args)
