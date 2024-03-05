@@ -83,10 +83,8 @@ def make_id_to_label(id_mapping: pd.DataFrame) -> dict[int, str]:
 
 
 def run(
-    trunk_weights_filepath: Path,
-    embedder_weights_filepath: Path,
+    model_filepath: Path,
     k: int,
-    args_filepath: Path,
     knn_index_filepath: Path,
     chip_filepath: Path,
     output_dir: Path,
@@ -102,20 +100,10 @@ def run(
     - args_filepath: arguments used to train the model (yaml file)
     - chip_path: path of the chip to run the identification on
     """
-    assert (
-        trunk_weights_filepath.exists()
-    ), f"trunk_filepath does not exist {trunk_weights_filepath}"
-    assert (
-        embedder_weights_filepath.exists()
-    ), f"embedder_filepath does not exist {embedder_weights_filepath}"
-    assert args_filepath.exists(), f"args_filepath does not exist {args_filepath}"
-
+    print(f"model_filepath: {model_filepath}")
+    loaded_model = torch.load(model_filepath)
     device = get_best_device()
-    args = yaml_read(args_filepath)
-    experiment_name = args["run"]["experiment_name"]
-    dataset_size = args["run"]["datasplit"]["dataset_size"]
-    split_type = args["run"]["datasplit"]["split_type"]
-    split_root_dir = Path(args["run"]["datasplit"]["split_root_dir"])
+    args = loaded_model["args"]
     config = args.copy()
     del config["run"]
 
@@ -124,11 +112,9 @@ def run(
         trunk_preprocessing=config["model"]["trunk"].get("preprocessing", {}),
     )
 
-    df_split = load_datasplit(
-        split_type=split_type,
-        dataset_size=dataset_size,
-        split_root_dir=split_root_dir,
-    )
+    logging.info(f"loading the df_split")
+    df_split = pd.DataFrame(loaded_model["data_split"])
+    df_split.info()
 
     id_mapping = make_id_mapping(df=df_split)
 
@@ -144,16 +130,18 @@ def run(
         embedding_size=config["model"]["embedder"]["embedding_size"],
         hidden_layer_sizes=config["model"]["embedder"]["hidden_layer_sizes"],
     )
+    trunk_weights = loaded_model["trunk"]
     trunk = model_dict["trunk"]
     trunk = load_weights(
         network=trunk,
-        weights_filepath=trunk_weights_filepath,
+        weights=trunk_weights,
         prefix="module.",
     )
+    embedder_weights = loaded_model["embedder"]
     embedder = model_dict["embedder"]
     embedder = load_weights(
         network=embedder,
-        weights_filepath=embedder_weights_filepath,
+        weights=embedder_weights,
         prefix="module.",
     )
 
@@ -162,6 +150,8 @@ def run(
         embedder=embedder,
     )
 
+    # TODO: embed the full dataset here?
+    # TODO: get rid of the bursts
     dataset_train = dataloaders["dataset"]["train"]
 
     compute_knn(

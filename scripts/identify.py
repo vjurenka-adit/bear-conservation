@@ -5,7 +5,8 @@ import shutil
 from pathlib import Path
 
 import cv2
-from tqdm.gui import tqdm
+import torch
+from tqdm import tqdm
 
 import bearfacesegmentation.chip
 import bearfacesegmentation.predict
@@ -22,20 +23,8 @@ def make_cli_parser() -> argparse.ArgumentParser:
         default=3,
     )
     parser.add_argument(
-        "--metriclearning-args-filepath",
-        help="filepath to the yaml file args.yaml used to train the model",
-        type=Path,
-        required=True,
-    )
-    parser.add_argument(
-        "--metriclearning-embedder-weights-filepath",
-        help="weights of the embedder",
-        type=Path,
-        required=True,
-    )
-    parser.add_argument(
-        "--metriclearning-trunk-weights-filepath",
-        help="weights of the trunk",
+        "--metriclearning-model-filepath",
+        help="filepath to the pytorch metric learning model, usually located in model/best/model.pth",
         type=Path,
         required=True,
     )
@@ -79,9 +68,14 @@ def validate_parsed_args(args: dict) -> bool:
 
 
 def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
-    """Handles one predictions_yolov8.
+    """Handles one prediction_yolov8.
 
     Running the bearidentification algorithm on the segmented head. It saves in folders specified in `args` the predictions.
+
+    args:
+    - prediction_yolov8: one prediction returned by yolov8.
+    - i: int - index of the prediction.
+    - args: arguments parsed from the command line.
     """
     # This is the size used for training the metriclearning
     # model
@@ -101,10 +95,11 @@ def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
     cv2.imwrite(str(chip_save_path / "resized.png"), resized_padded_cropped_head)
 
     bearidentification.metriclearning.predict.run(
-        trunk_weights_filepath=args["metriclearning_trunk_weights_filepath"],
-        embedder_weights_filepath=args["metriclearning_embedder_weights_filepath"],
+        model_filepath=args["metriclearning_model_filepath"],
+        # trunk_weights_filepath=args["metriclearning_trunk_weights_filepath"],
+        # embedder_weights_filepath=args["metriclearning_embedder_weights_filepath"],
         k=args["k"],
-        args_filepath=args["metriclearning_args_filepath"],
+        # args_filepath=args["metriclearning_args_filepath"],
         knn_index_filepath=args["metriclearning_knn_index_filepath"],
         chip_filepath=chip_save_path / "resized.png",
         output_dir=prediction_save_path,
