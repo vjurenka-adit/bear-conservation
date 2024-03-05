@@ -470,7 +470,7 @@ def make_embedder(
         trunk_output_size = trunk.fc.in_features
         trunk.fc = nn.Identity()
         return MLP([trunk_output_size, *hidden_layer_sizes, embedding_size])
-    elif pretrained_backbone in ["convnext_tiny", "convnext_base"]:
+    elif pretrained_backbone in ["convnext_tiny", "convnext_base", "convnext_large"]:
         trunk_output_size = trunk.classifier[-1].in_features
         trunk.classifier[-1] = nn.Identity()
         return MLP([trunk_output_size, *hidden_layer_sizes, embedding_size])
