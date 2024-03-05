@@ -7,7 +7,7 @@ import pandas as pd
 import yaml
 from tqdm import tqdm
 
-from bearidentification.data.split.utils import MyDumper
+from bearidentification.data.split.utils import THRESHOLDS, MyDumper, resize_dataframe
 
 
 def parse_xml_chips(filepath: Path, chips_root_dir: Path) -> pd.DataFrame:
@@ -107,21 +107,6 @@ def save_datasplit(
         chips_root_dir=chips_root_dir,
         threshold_value=threshold_value,
     )
-
-
-def resize_dataframe(df: pd.DataFrame, threshold_value: int):
-    return df.groupby("bear_id").filter(lambda x: len(x) > threshold_value)
-
-
-# threshold key to number of individual by bear id.
-THRESHOLDS = {
-    "nano": 150,
-    "small": 100,
-    "medium": 50,
-    "large": 10,
-    "xlarge": 1,
-    "full": 0,
-}
 
 
 def save_all_datasplits(

@@ -10,10 +10,6 @@ class MyDumper(yaml.Dumper):
         return super(MyDumper, self).increase_indent(flow, False)
 
 
-# def resize_dataframe(df: pd.DataFrame, threshold_value: int):
-#     return df.groupby("bear_id").filter(lambda x: len(x) >= threshold_value)
-
-
 def resize_dataframe(df: pd.DataFrame, threshold_value: int):
     return df.groupby("bear_id").filter(lambda x: len(x) > threshold_value)
 

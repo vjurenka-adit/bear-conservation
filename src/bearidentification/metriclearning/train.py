@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 from pytorch_metric_learning import losses, miners, samplers, trainers
 
+from bearidentification.data.split.utils import THRESHOLDS
 from bearidentification.metriclearning.metrics import make_accuracy_calculator
 from bearidentification.metriclearning.utils import (
     BearDataset,
@@ -23,6 +24,7 @@ from bearidentification.metriclearning.utils import (
     make_tester,
     resize_dataframe,
     save_sample_batch,
+    yaml_read,
     yaml_write,
 )
 
@@ -264,14 +266,68 @@ def train(trainer, num_epochs: int):
     return trainer.train(num_epochs=num_epochs)
 
 
-def save_best_model_weights(model_folder: Path, output_dir: Path) -> None:
-    """Saves the best model weights in the specified `output_dir`."""
+def get_best_weights_filepaths(model_folder: Path) -> dict:
+    """Returns the best weights filepaths for the trunk and the embedder."""
     embedder_weights_best_path = list(model_folder.glob("embedder_best*"))[0]
     trunk_weights_best_path = list(model_folder.glob("trunk_best*"))[0]
+    return {
+        "trunk": trunk_weights_best_path,
+        "embedder": embedder_weights_best_path,
+    }
+
+
+def get_best_weights(model_folder: Path) -> dict:
+    """Returns the best weights for the trunk and the embedder."""
+    best_weights_filepaths = get_best_weights_filepaths(model_folder=model_folder)
+    return {
+        "trunk": torch.load(best_weights_filepaths["trunk"]),
+        "embedder": torch.load(best_weights_filepaths["embedder"]),
+    }
+
+
+def save_best_model_weights(model_folder: Path, output_dir: Path) -> None:
+    """Saves the best model weights in the specified `output_dir`."""
+    best_weights_filepaths = get_best_weights_filepaths(model_folder=model_folder)
     logging.info(f"Copying best model weights in {output_dir}")
     os.makedirs(output_dir, exist_ok=True)
-    shutil.copy(src=embedder_weights_best_path, dst=output_dir / "embedder.pth")
-    shutil.copy(src=trunk_weights_best_path, dst=output_dir / "trunk.pth")
+    shutil.copy(src=best_weights_filepaths["embedder"], dst=output_dir / "embedder.pth")
+    shutil.copy(src=best_weights_filepaths["trunk"], dst=output_dir / "trunk.pth")
+
+
+def package_model(train_run_root_dir: Path) -> dict:
+    """Packages in the same python dict the following artifacts:
+
+    - best trunk_weights: dict
+    - best embedder_weights: dict
+    - args: dict that fully describes the run configuration and hyperparameters
+    - data_split: dict that can be loaded as a pandas dataframe. The data split used for the run.
+
+    It makes it easy to ship the model around and to only point to one filepath when loading it.
+
+    args:
+    - train_run_root_dir: Path - directory of the train_run
+    """
+    model_folder = train_run_root_dir / "model"
+    assert model_folder.exists(), f"model folder does not exist: {model_folder}"
+
+    args_filepath = train_run_root_dir / "args.yaml"
+    assert args_filepath.exists(), f"args_filepath does not exist {args_filepath}"
+
+    args = yaml_read(args_filepath)
+    best_weights = get_best_weights(model_folder=model_folder)
+
+    datasplit = args["run"]["datasplit"]
+
+    df_split = load_datasplit(
+        split_type=datasplit["split_type"],
+        dataset_size=datasplit["dataset_size"],
+        split_root_dir=Path(datasplit["split_root_dir"]),
+    )
+    return {
+        "args": args,
+        **best_weights,
+        "data_split": df_split.to_dict(),
+    }
 
 
 def run(
@@ -280,7 +336,6 @@ def run(
     dataset_size: str,
     output_dir: Path,
     config: dict,
-    # experiment_number: int,
     experiment_name: str,
     random_seed: int = 0,
 ) -> None:
@@ -290,6 +345,7 @@ def run(
     See src/bearidentification/metriclearning/configs/ for configs
     examples.
     """
+    logging.info(f"Fixing random_seed to {random_seed}")
     fix_random_seed(random_seed)
 
     logging.info(f"Setting up the experiment {experiment_name}")
@@ -321,20 +377,8 @@ def run(
         transforms=transforms,
     )
 
-    # Making smaller versions of the datasets for visualizing the
-    # embeddings
-    THRESHOLDS = {
-        "nano": 150,
-        "small": 100,
-        "medium": 50,
-        "large": 10,
-        "xlarge": 1,
-        "full": 0,
-    }
     threshold_value = THRESHOLDS["small"]
-
     df_split_small = resize_dataframe(df=df_split, threshold_value=threshold_value)
-
     dataloaders_small = make_dataloaders(
         batch_size=config["batch_size"],
         df_split=df_split_small,
@@ -463,226 +507,13 @@ def run(
     yaml_write(to=run_config_filepath, data=args)
     logging.info(f"Running the training for {config['num_epochs']} epochs")
     train(trainer=trainer, num_epochs=config["num_epochs"])
+    best_model_weights_output_dir = model_folder / "weights" / "best"
     save_best_model_weights(
         model_folder=model_folder,
-        output_dir=model_folder / "weights" / "best",
+        output_dir=best_model_weights_output_dir,
     )
 
-
-## REPL
-# reorganize weights artifacts
-# model_folder = Path(
-#     "data/06_models/bearidentification/metric_learning/baseline_circleloss_dumb_nano_by_provided_bearid/model"
-# )
-# model_folder.exists()
-
-# best_weights_output_dir = Path(
-#     "data/06_models/bearidentification/metric_learning/baseline_circleloss_dumb_nano_by_provided_bearid/model/weights/best/"
-# )
-
-# # Find best weights in model_folder
-# embedder_weights_best_path = list(model_folder.glob("embedder_best*"))[0]
-# trunk_weights_best_path = list(model_folder.glob("trunk_best*"))[0]
-
-# trunk_weights_best_path
-
-# os.makedirs(best_weights_output_dir, exist_ok=True)
-# shutil.copy(
-#     src=embedder_weights_best_path, dst=best_weights_output_dir / "embedder.pth"
-# )
-# shutil.copy(src=trunk_weights_best_path, dst=best_weights_output_dir / "trunk.pth")
-
-
-# model
-
-## REPL
-# split_root_dir = Path("data/04_feature/bearidentification/bearid/split/")
-# split_root_dir.exists()
-
-# split_type = "by_provided_bearid"
-# dataset_size = "nano"
-# df_split = load_datasplit(split_type=split_type, dataset_size=dataset_size)
-# df_split.head()
-
-# transform = get_transform(transform_type="dumb", config={})
-# type(transform)
-
-# batch_size = 32
-
-# dataloaders = make_dataloaders(
-#     batch_size=batch_size, df_split=df_split, transform=transform
-# )
-# dataloaders
-
-# experiment_number = 0
-# loss_type = "circleloss"
-# experiment_name = get_experiment_name(
-#     experiment_number=experiment_number,
-#     loss_type=loss_type,
-#     dataset_size=dataset_size,
-#     split_type=split_type,
-# )
-# experiment_name
-# output_dir = Path("data/06_models/bearidentification/metric_learning/")
-# output_dir.exists()
-# record_path = get_record_path(experiment_name=experiment_name, output_dir=output_dir)
-# record_path
-# hooks = make_hooks(record_path=record_path)
-# hooks
-
-# accuracy_calculator = AccuracyCalculator(k="max_bin_count")
-# tester = make_tester(
-#     hooks=hooks, record_path=record_path, accuracy_calculator=accuracy_calculator
-# )
-# tester
-
-# device = get_best_device()
-
-# pretrained_backbone = "resnet18"
-# embedding_size = 128
-# hidden_layer_sizes = [1024]
-
-# model_dict = make_model_dict(
-#     device=device,
-#     pretrained_backbone=pretrained_backbone,
-#     embedding_size=embedding_size,
-#     hidden_layer_sizes=hidden_layer_sizes,
-# )
-# model_dict
-
-# config_optimizers = {
-#     "embedder": {"lr": 0.001, "weight_decay": 1e-5},
-#     "trunk": {"lr": 0.0001, "weight_decay": 1e-5},
-# }
-# optimizers = make_optimizers(
-#     config=config_optimizers,
-#     trunk=model_dict["trunk"],
-#     embedder=model_dict["embedder"],
-# )
-# optimizers
-
-# config_loss = {"m": 0.4, "gamma": 256}
-# loss_funcs = make_loss_functions(loss_type=loss_type, config=config_loss)
-# loss_funcs
-
-# config_miner = {"pos_strategy": "semihard", "neg_strategy": "hard"}
-# miner_type = "batcheasyhardminer"
-# mining_funcs = make_mining_functions(miner_type=miner_type, config=config_miner)
-# mining_funcs
-
-# id_mapping = make_id_mapping(df=df_split)
-# id_mapping.head()
-# config_sampler = {"m": 4}
-
-# sampler = make_sampler(
-#     sampler_type="mperclass",
-#     id_mapping=id_mapping,
-#     train_dataset=dataloaders["dataset"]["train"],
-#     config=config_sampler,
-# )
-# sampler
-
-# dataset_dict = {
-#     "train": dataloaders["dataset"]["train"],
-#     "val": dataloaders["dataset"]["val"],
-# }
-# record_path
-
-# model_folder = record_path / "model"
-# model_folder
-# end_of_epoch_hook = make_end_of_epoch_hook(
-#     hooks=hooks,
-#     tester=tester,
-#     dataset_dict=dataset_dict,
-#     model_folder=model_folder,
-# )
-# end_of_epoch_hook
-
-# trainer = make_trainer(
-#     model_dict=model_dict,
-#     optimizers=optimizers,
-#     batch_size=batch_size,
-#     loss_funcs=loss_funcs,
-#     train_dataset=dataloaders["dataset"]["train"],
-#     mining_funcs=mining_funcs,
-#     sampler=sampler,
-#     end_of_iteration_hook=hooks.end_of_iteration_hook,
-#     end_of_epoch_hook=end_of_epoch_hook,
-# )
-# trainer
-
-# # train(trainer=trainer, num_epochs=1)
-
-# # run(
-# #     split_root_dir=split_root_dir,
-# #     split_type=split_type,
-# #     dataset_size=dataset_size,
-# #     output_dir=output_dir,
-# #     config=config,
-# #     experiment_number=42,
-# #     random_seed=0,
-# # )
-
-
-## REPL to persist the config file
-# from pathlib import Path
-
-# from bearidentification.metriclearning.utils import yaml_read, yaml_write
-
-# filepath = Path("src/bearidentification/metriclearning/configs/baseline.yaml")
-# filepath.exists()
-
-# yaml_write(to=filepath, data=config)
-
-# # Check that it worked
-# d = yaml_read(filepath)
-# d == config
-
-# config = {
-#     "batch_size": 32,
-#     "num_epochs": 1,
-#     "data_augmentation": {"type": "bare", "config": {}},
-#     "model": {
-#         "trunk": {"backbone": "resnet18"},
-#         "embedder": {
-#             "embedding_size": 128,
-#             "hidden_layer_sizes": [1024],
-#         },
-#     },
-#     "loss": {
-#         "type": "circleloss",
-#         "config": {
-#             "m": 0.4,
-#             "gamma": 256,
-#         },
-#     },
-#     "sampler": {
-#         "type": "mperclass",
-#         "config": {
-#             "m": 4,
-#         },
-#     },
-#     "optimizers": {
-#         "embedder": {
-#             "type": "adam",
-#             "config": {
-#                 "lr": 0.001,
-#                 "weight_decay": 1e-5,
-#             },
-#         },
-#         "trunk": {
-#             "type": "adam",
-#             "config": {
-#                 "lr": 0.0001,
-#                 "weight_decay": 1e-5,
-#             },
-#         },
-#     },
-#     "miner": {
-#         "type": "batcheasyhardminer",
-#         "config": {
-#             "pos_strategy": "semihard",
-#             "neg_strategy": "hard",
-#         },
-#     },
-# }
+    package_filepath = best_model_weights_output_dir / "model.pth"
+    logging.info(f"Packaging the model artifacts in one file in {package_filepath}")
+    packaged = package_model(train_run_root_dir=record_path)
+    torch.save(packaged, package_filepath)
