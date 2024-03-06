@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from tqdm import tqdm
 
 from bearidentification.metriclearning.eval import run
 from bearidentification.metriclearning.utils import yaml_read
@@ -48,11 +47,16 @@ def make_df_experiment(evaluation_root_dir: Path) -> pd.DataFrame:
         ],
         "miner": args["miner"]["type"] if args.get("miner", None) else None,
     }
+
+    available_splits = set(df_evaluation_metrics["split"].unique())
     for split in splits:
         for metrics_column in metrics_columns:
-            data[f"{split}_{metrics_column}"] = df_evaluation_metrics[
-                df_evaluation_metrics["split"] == split
-            ].iloc[0][metrics_column]
+            if split in available_splits:
+                data[f"{split}_{metrics_column}"] = df_evaluation_metrics[
+                    df_evaluation_metrics["split"] == split
+                ].iloc[0][metrics_column]
+            else:
+                data[f"{split}_{metrics_column}"] = None
 
     return pd.DataFrame.from_dict([data])
 
@@ -105,13 +109,6 @@ if __name__ == "__main__":
         logging.info(args)
         evaluations_root_dir = args["evaluations_root_dir"]
         logging.info(f"Generating a summary of all models")
+        print(evaluations_root_dir)
         df_summary = make_df_summary(evaluations_root_dir=evaluations_root_dir)
         df_summary.to_csv(evaluations_root_dir / "summary.csv")
-
-paths = [
-    evaluations_root_dir / subdir
-    for subdir in os.listdir(evaluations_root_dir)
-    if os.path.isdir(evaluations_root_dir / subdir)
-]
-
-paths

@@ -327,6 +327,11 @@ def make_dataloaders(
         shuffle=True,
         drop_last=True,
     )
+    full_dataset = BearDataset(
+        df_split,
+        id_mapping,
+        transform=transforms["val"],
+    )
 
     return {
         "dataset": {
@@ -334,6 +339,7 @@ def make_dataloaders(
             "train": train_dataset,
             "val": val_dataset,
             "test": test_dataset,
+            "full": full_dataset,
         },
         "loader": {
             "viz": viz_loader,

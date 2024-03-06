@@ -35,11 +35,15 @@ def run(
     output_dir: Path,
 ) -> None:
     """Main entrypoint to run the evaluation."""
+    device = get_best_device()
     best_model_filepath = get_best_model_filepath(train_run_root_dir=train_run_root_dir)
     assert (
         best_model_filepath.exists()
     ), f"best model filepath does not exist {best_model_filepath}"
-    loaded_model = torch.load(best_model_filepath)
+    loaded_model = torch.load(
+        best_model_filepath,
+        map_location=device,
+    )
     device = get_best_device()
     args = loaded_model["args"]
     experiment_name = args["run"]["experiment_name"]
@@ -101,7 +105,14 @@ def run(
     )
     logging.info(f"Initialized the tester {tester}")
 
-    dataset_dict = {"train": dataset_train, "val": dataset_val, "test": dataset_test}
+    dataset_dict = {}
+    dataset_dict["train"] = dataset_train
+    if len(dataset_test) > 0:
+        dataset_dict["test"] = dataset_test
+    dataset_dict["test"] = dataset_test
+    if len(dataset_val) > 0:
+        dataset_dict["val"] = dataset_val
+
     all_accuracies = tester.test(dataset_dict, 1, trunk, embedder)
     pprint.pprint(all_accuracies)
     df_metrics = accuracies_to_df(all_accuracies)

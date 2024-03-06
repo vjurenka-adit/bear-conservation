@@ -5,7 +5,6 @@ import shutil
 from pathlib import Path
 
 import cv2
-import torch
 from tqdm import tqdm
 
 import bearfacesegmentation.chip
@@ -24,27 +23,35 @@ def make_cli_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--metriclearning-model-filepath",
-        help="filepath to the pytorch metric learning model, usually located in model/best/model.pth",
+        help="filepath to the pytorch metric learning model.",
         type=Path,
-        required=True,
+        default=Path(
+            "./data/06_models/pipeline/metriclearning/bearidentification/model.pt"
+        ),
     )
     parser.add_argument(
         "--metriclearning-knn-index-filepath",
         help="filepath to the knn index.",
         type=Path,
-        required=True,
+        default=Path(
+            "./data/06_models/pipeline/metriclearning/bearidentification/knn.index"
+        ),
     )
     parser.add_argument(
         "--instance-segmentation-weights-filepath",
         help="model weights filepath. It should be located in data/06_models.",
         type=Path,
-        required=True,
+        default=Path(
+            "./data/06_models/pipeline/metriclearning/bearfacesegmentation/model.pt"
+        ),
     )
     parser.add_argument(
         "--source-path",
         help="source path, usually an image filepath or a directory containing images.",
         type=Path,
-        required=True,
+        default=Path(
+            "./data/06_models/pipeline/metriclearning/bearfacesegmentation/model.pt"
+        ),
     )
     parser.add_argument(
         "--output-dir",
@@ -61,10 +68,29 @@ def make_cli_parser() -> argparse.ArgumentParser:
     return parser
 
 
-# TODO:
 def validate_parsed_args(args: dict) -> bool:
     """Returns whether the parsed args are valid."""
-    return True
+    k = args["k"]
+    if k <= 0:
+        logging.error(f"k should be a natural number, k: {k}")
+        return False
+    elif not args["metriclearning_model_filepath"].exists():
+        logging.error(
+            f"invalid --metriclearning-model-filepath, filepath does not exist"
+        )
+        return False
+    elif not args["metriclearning_knn_index_filepath"].exists():
+        logging.error(
+            f"invalid --metriclearning-knn-index-filepath, filepath does not exist"
+        )
+        return False
+    elif not args["instance_segmentation_weights_filepath"].exists():
+        logging.error(
+            f"invalid --instance-segmentation-weights-filepath, filepath does not exist"
+        )
+        return False
+    else:
+        return True
 
 
 def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
@@ -96,10 +122,7 @@ def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
 
     bearidentification.metriclearning.predict.run(
         model_filepath=args["metriclearning_model_filepath"],
-        # trunk_weights_filepath=args["metriclearning_trunk_weights_filepath"],
-        # embedder_weights_filepath=args["metriclearning_embedder_weights_filepath"],
         k=args["k"],
-        # args_filepath=args["metriclearning_args_filepath"],
         knn_index_filepath=args["metriclearning_knn_index_filepath"],
         chip_filepath=chip_save_path / "resized.png",
         output_dir=prediction_save_path,

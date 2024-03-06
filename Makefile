@@ -605,12 +605,38 @@ bearidentification_metriclearning: bearidentification_data_split bearidentificat
 # End to end pipeline command examples
 # ------------------------------------
 
+# FIXME: replace it with the best metricleaning model
+package_pipeline:
+	python ./scripts/bearidentification/metriclearning/package_pipeline.py \
+	  --instance-segmentation-weights-filepath ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_baseline/weights/best.pt \
+	  --metriclearning-model-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/model.pth \
+	  --output-filepath ./data/06_models/pipeline/metriclearning/packaged-pipeline.pth \
+	  --output-dir ./data/06_models/pipeline/metriclearning/ \
+	  --loglevel "info"
+
+install_packaged_pipeline:
+	python ./scripts/install_packaged_pipeline.py \
+	  --packaged-pipeline-archive-filepath ./data/06_models/pipeline/metriclearning/packaged_pipeline.zip \
+	  --loglevel "info"
+
+
+# ---------------------
+# Identification script
+# ---------------------
+
 identify_example:
 	python ./scripts/identify.py \
 	  --source-path ./data/09_external/identify/P1250243.JPG \
 	  --output-dir ./data/07_model_output/identify/example/ \
+	  --k 15 \
+	  --metriclearning-model-filepath ./data/06_models/pipeline/metriclearning/bearidentification/model.pt \
+	  --metriclearning-knn-index-filepath ./data/06_models/pipeline/metriclearning/bearidentification/knn.index \
+	  --instance-segmentation-weights-filepath ./data/06_models/pipeline/metriclearning/bearfacesegmentation/model.pt \
+	  --loglevel "info"
+
+identify_default:
+	python ./scripts/identify.py \
 	  --k 5 \
-	  --metriclearning-model-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/model.pth \
-	  --metriclearning-knn-index-filepath ./data/07_model_output/identify/.knn/knn.index \
-	  --instance-segmentation-weights-filepath ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_baseline/weights/best.pt \
+	  --source-path ./data/09_external/identify/P1250243.JPG \
+	  --output-dir ./data/07_model_output/identify/default/ \
 	  --loglevel "info"

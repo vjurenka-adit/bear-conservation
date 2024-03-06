@@ -1,4 +1,5 @@
 import os
+from collections import Counter
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -7,23 +8,115 @@ import pandas as pd
 import torch
 import torchvision
 from joblib.logger import shutil
+from matplotlib.gridspec import GridSpec
 from PIL import Image
 from pytorch_metric_learning.utils.common_functions import logging
 from pytorch_metric_learning.utils.inference import InferenceModel
 from torch.utils.data import Dataset
 
+from bearidentification.metriclearning.ui.prediction import bearid_ui
 from bearidentification.metriclearning.utils import (
-    IMAGENET_MEAN,
-    IMAGENET_STD,
     get_best_device,
     get_transforms,
-    load_datasplit,
     load_weights,
     make_dataloaders,
     make_id_mapping,
     make_model_dict,
-    yaml_read,
 )
+
+
+def _aux_get_k_nearest_individuals(
+    model: InferenceModel,
+    k_neighbors: int,
+    k_individuals: int,
+    query,
+    id_to_label: dict,
+    dataset: Dataset,
+) -> dict:
+    distances, indices = model.get_nearest_neighbors(query=query, k=k_neighbors)
+    indices_on_cpu = indices.cpu()[0].tolist()
+    distances_on_cpu = distances.cpu()[0].tolist()
+    nearest_images, nearest_ids = list(zip(*[dataset[idx] for idx in indices_on_cpu]))
+    bearids = [id_to_label.get(nearest_id, "unknown") for nearest_id in nearest_ids]
+    counter = Counter(nearest_ids)
+    if len(counter.keys()) >= k_individuals:
+        return {
+            "k_neighbors": k_neighbors,
+            "k_individuals": k_individuals,
+            "dataset_indices": indices_on_cpu,
+            "dataset_labels": list(nearest_ids),
+            "dataset_images": list(nearest_images),
+            "bearids": bearids,
+            "distances": distances_on_cpu,
+        }
+    else:
+        new_k_neighbors = k_neighbors * 2
+        return _aux_get_k_nearest_individuals(
+            model,
+            k_neighbors=new_k_neighbors,
+            k_individuals=k_individuals,
+            query=query,
+            id_to_label=id_to_label,
+            dataset=dataset,
+        )
+
+
+def get_k_nearest_individuals(
+    model: InferenceModel,
+    k: int,
+    query,
+    id_to_label: dict,
+    dataset: Dataset,
+) -> dict:
+    k_neighbors = k * 5
+    k_individuals = k
+    result = _aux_get_k_nearest_individuals(
+        model=model,
+        k_neighbors=k_neighbors,
+        k_individuals=k_individuals,
+        query=query,
+        id_to_label=id_to_label,
+        dataset=dataset,
+    )
+    return result
+
+
+def index_by_bearid(k_nearest_individuals: dict) -> dict:
+    result = {}
+    for dataset_label, dataset_image, distance, bearid, dataset_index in zip(
+        k_nearest_individuals["dataset_labels"],
+        k_nearest_individuals["dataset_images"],
+        k_nearest_individuals["distances"],
+        k_nearest_individuals["bearids"],
+        k_nearest_individuals["dataset_indices"],
+    ):
+        row = {
+            "dataset_label": dataset_label,
+            "dataset_image": dataset_image,
+            "distance": distance,
+            "dataset_index": dataset_index,
+        }
+        if bearid not in result:
+            result[bearid] = [row]
+        else:
+            result[bearid].append(row)
+    return result
+
+
+def sample_chips_from_bearid(
+    bear_id: str, df_split: pd.DataFrame, n: int = 4
+) -> list[Path]:
+    xs = df_split[df_split["bear_id"] == bear_id].sample(n=n)["path"].tolist()
+    return [Path(x) for x in xs]
+
+
+def make_indexed_samples(
+    bear_ids: list[str], df_split: pd.DataFrame, n: int = 4
+) -> dict[str, list[Path]]:
+    return {
+        bear_id: sample_chips_from_bearid(bear_id=bear_id, df_split=df_split, n=n)
+        for bear_id in bear_ids
+    }
 
 
 def compute_knn(
@@ -43,41 +136,6 @@ def compute_knn(
         model.save_knn_func(filename=str(knn_index_filepath))
 
 
-def get_inverse_normalize_transform(mean, std):
-    return torchvision.transforms.Normalize(
-        mean=[-m / s for m, s in zip(mean, std)], std=[1 / s for s in std]
-    )
-
-
-def save_nearest_images(
-    nearest_images: list,
-    bearids: list[str],
-    distances: list[float],
-    save_filepath: Path,
-) -> None:
-    inv_normalize = get_inverse_normalize_transform(
-        mean=IMAGENET_MEAN,
-        std=IMAGENET_STD,
-    )
-    k = len(nearest_images)
-    n_row = 1
-    n_col = k
-    _, axs = plt.subplots(n_row, n_col, figsize=(3 * k, 12))
-    axs = axs.flatten()
-
-    for nearest_image, bearid, distance, ax in zip(
-        nearest_images, bearids, distances, axs
-    ):
-        image = inv_normalize(nearest_image).numpy()
-        image = np.transpose(image, (1, 2, 0))
-        ax.set_axis_off()
-        ax.set_title(f"{bearid}: {distance:.2f}")
-        ax.imshow(image)
-
-    plt.savefig(save_filepath, bbox_inches="tight")
-    plt.close()
-
-
 def make_id_to_label(id_mapping: pd.DataFrame) -> dict[int, str]:
     return id_mapping.set_index("id")["label"].to_dict()
 
@@ -88,21 +146,20 @@ def run(
     knn_index_filepath: Path,
     chip_filepath: Path,
     output_dir: Path,
+    n_samples_per_individual: int = 5,
 ) -> None:
     """Main entrypoints to run the inference.
 
     args:
-    - trunk_weights_filepath: filepath of the trunk weights
-    - embedder_weights_filepath: filepath of the embedder weights
+    - model_filepath: filepath of the metriclearning model
     - knn_index_filepath: filepath to cache the knn computed index
-    - k: integer - k closest embeddings to return
+    - k: integer - k closest individuals to return
     - output_dir: path where results are stored
-    - args_filepath: arguments used to train the model (yaml file)
-    - chip_path: path of the chip to run the identification on
+    - chip_filepath: path of the chip to run the identification on
+    - n_samples_per_individual: integer - number of samples per individuals to retrieve
     """
-    print(f"model_filepath: {model_filepath}")
-    loaded_model = torch.load(model_filepath)
     device = get_best_device()
+    loaded_model = torch.load(model_filepath, map_location=device)
     args = loaded_model["args"]
     config = args.copy()
     del config["run"]
@@ -150,28 +207,34 @@ def run(
         embedder=embedder,
     )
 
-    # TODO: embed the full dataset here?
-    # TODO: get rid of the bursts
-    dataset_train = dataloaders["dataset"]["train"]
+    dataset_full = dataloaders["dataset"]["full"]
 
-    compute_knn(
-        model=model,
-        dataset=dataset_train,
-        knn_index_filepath=knn_index_filepath,
-    )
+    assert (
+        knn_index_filepath.exists()
+    ), f"knn_index_filepath invalid filepath: {knn_index_filepath}"
+    model.load_knn_func(filename=str(knn_index_filepath))
 
     logging.info(f"Image Path: {chip_filepath}")
     image = Image.open(chip_filepath)
     transform_test = transforms["test"]
     model_input = transform_test(image)
+    query = model_input.unsqueeze(0)
     id_to_label = make_id_to_label(id_mapping=id_mapping)
-    distances, indices = model.get_nearest_neighbors(
-        query=model_input.unsqueeze(0),
+    k_nearest_individuals = get_k_nearest_individuals(
+        model=model,
         k=k,
+        query=query,
+        id_to_label=id_to_label,
+        dataset=dataset_full,
     )
-    indices_on_cpu = indices.cpu()[0].tolist()
-    nearest_imgs, nearest_ids = list(
-        zip(*[dataset_train[idx] for idx in indices_on_cpu])
+    indexed_k_nearest_individuals = index_by_bearid(
+        k_nearest_individuals=k_nearest_individuals
+    )
+    bear_ids = list(indexed_k_nearest_individuals.keys())
+    indexed_samples = make_indexed_samples(
+        bear_ids=bear_ids,
+        df_split=df_split,
+        n=n_samples_per_individual - 1,
     )
     prediction_dir = output_dir
     os.makedirs(prediction_dir, exist_ok=True)
@@ -179,11 +242,12 @@ def run(
         src=chip_filepath,
         dst=prediction_dir / "chip.jpg",
     )
-    bearids = [id_to_label.get(nearest_id, "unknown") for nearest_id in nearest_ids]
-
-    save_nearest_images(
-        nearest_images=list(nearest_imgs),
-        bearids=bearids,
-        distances=torch.flatten(distances).tolist(),
-        save_filepath=prediction_dir / f"prediction_at_{k}.png",
+    bearid_ui(
+        chip_filepath=chip_filepath,
+        indexed_k_nearest_individuals=indexed_k_nearest_individuals,
+        indexed_samples=indexed_samples,
+        save_filepath=Path(
+            prediction_dir
+            / f"prediction_at_{k}_individuals_{n_samples_per_individual}_samples_per_individual.png"
+        ),
     )
