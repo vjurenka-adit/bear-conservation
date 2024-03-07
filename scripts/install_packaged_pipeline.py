@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 import torch
-from pytorch_metric_learning.utils.inference import InferenceModel
-from torch.utils.data import ConcatDataset
+
+from bearidentification.metriclearning.utils import get_best_device
 
 
 def make_cli_parser() -> argparse.ArgumentParser:
@@ -44,7 +44,10 @@ def validate_parsed_args(args: dict) -> bool:
         )
         return False
     else:
-        MD5_VERIFIED_HASHES = {"5758de3c2815db4b92f1513d95f0b62b"}
+        MD5_VERIFIED_HASHES = {
+            "5758de3c2815db4b92f1513d95f0b62b",
+            "16547552d05d189090cb5a269b6555ee",
+        }
         md5_hash = md5(args["packaged_pipeline_archive_filepath"])
         logging.info(f"archive md5 hash: {md5_hash}")
         if not md5_hash in MD5_VERIFIED_HASHES:
@@ -63,6 +66,7 @@ if __name__ == "__main__":
     else:
         # TODO: add a md5 check here
         logging.info(args)
+        device = get_best_device()
 
         INSTALL_PATH = Path("./data/06_models/pipeline/metriclearning/")
         logging.info(f"Installing the packaged pipeline in {INSTALL_PATH}")
@@ -73,7 +77,10 @@ if __name__ == "__main__":
             extract_dir=INSTALL_PATH,
         )
         metriclearning_model_filepath = INSTALL_PATH / "bearidentification" / "model.pt"
-        bearidentification_model = torch.load(metriclearning_model_filepath)
+        bearidentification_model = torch.load(
+            metriclearning_model_filepath,
+            map_location=device,
+        )
         df_split = pd.DataFrame(bearidentification_model["data_split"])
 
         chips_root_dir = Path("/".join(df_split.iloc[0]["path"].split("/")[:-4]))

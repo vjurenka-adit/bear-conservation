@@ -69,7 +69,11 @@ def validate_parsed_args(args: dict) -> bool:
         return False
     else:
         logging.info(f"Loading metriclearning_model to check keys")
-        loaded_metriclearning_model = torch.load(args["metriclearning_model_filepath"])
+        device = get_best_device()
+        loaded_metriclearning_model = torch.load(
+            args["metriclearning_model_filepath"],
+            map_location=device,
+        )
         expected_keys = {"trunk", "embedder", "data_split", "args"}
         keys = {k for k in loaded_metriclearning_model.keys()}
         if not keys == expected_keys:
@@ -90,7 +94,11 @@ if __name__ == "__main__":
         instance_segmentation_weights = torch.load(
             args["instance_segmentation_weights_filepath"]
         )
-        bearidentification_model = torch.load(args["metriclearning_model_filepath"])
+        device = get_best_device()
+        bearidentification_model = torch.load(
+            args["metriclearning_model_filepath"],
+            map_location=device,
+        )
         df_split = pd.DataFrame(bearidentification_model["data_split"])
         chips_root_dir = Path("/".join(df_split.iloc[0]["path"].split("/")[:-4]))
         logging.info(f"chips_root_dir found: {chips_root_dir}")

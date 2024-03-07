@@ -96,7 +96,8 @@ def validate_parsed_args(args: dict) -> bool:
 def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
     """Handles one prediction_yolov8.
 
-    Running the bearidentification algorithm on the segmented head. It saves in folders specified in `args` the predictions.
+    Running the bearidentification algorithm on the segmented head. It saves in
+    folders specified in `args` the predictions.
 
     args:
     - prediction_yolov8: one prediction returned by yolov8.
@@ -108,7 +109,7 @@ def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
     SQUARE_DIM = 300
     save_path = args["output_dir"]
     prediction_save_path = save_path / f"prediction_{i}"
-    chip_save_path = prediction_save_path / f"chip"
+    chip_save_path = prediction_save_path / "chip"
     os.makedirs(chip_save_path, exist_ok=True)
     cropped_bear_head = bearfacesegmentation.chip.crop_from_yolov8(prediction_yolov8)
     padded_cropped_head = bearfacesegmentation.chip.square_pad(cropped_bear_head)

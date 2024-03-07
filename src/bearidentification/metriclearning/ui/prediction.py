@@ -46,8 +46,9 @@ def bearid_ui(
     # TODO: sort the bear ids by minimum distance here
     bear_ids = list(indexed_k_nearest_individuals.keys())
     ncols = len(bear_ids)
-    nrows = max([len(xs) for xs in indexed_samples.values()]) + 1
-    fig = plt.figure(constrained_layout=True, figsize=(3 * ncols, 3 * nrows))
+    nrows = max([len(xs) for xs in indexed_samples.values()]) + 2
+    figsize = (3 * ncols, 3 * nrows)
+    fig = plt.figure(constrained_layout=True, figsize=figsize)
     gs = GridSpec(nrows=nrows, ncols=ncols, figure=fig)
     ax = fig.add_subplot(gs[0, 0])
     ax.set_title(f"Extracted chip")
@@ -87,4 +88,3 @@ def bearid_ui(
     fig.suptitle("BearID-v2")
     plt.savefig(save_filepath, bbox_inches="tight")
     plt.close()
-    # plt.show()

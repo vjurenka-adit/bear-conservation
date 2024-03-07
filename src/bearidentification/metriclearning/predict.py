@@ -1,6 +1,7 @@
 import os
 from collections import Counter
 from pathlib import Path
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,6 +34,20 @@ def _aux_get_k_nearest_individuals(
     id_to_label: dict,
     dataset: Dataset,
 ) -> dict:
+    """Auxiliary helper function to get k nearest individuals.
+
+    Returns a dict with the following keys:
+    - k_neighbors: int - number of neighbors the KNN search extends to in order to find at least k_individuals
+    - dataset_indices: list[int] - list of indices to call get_item on the dataset
+    - dataset_labels: list[int] - labels of the dataset for the given dataset_indices
+    - dataset_images: list[torch.tensor] - chips of the bears
+    - distances: list[float] - distances from the query
+
+    Note: it can return more than k_individuals as it extends progressively the
+    KNN search to find at least k_individuals.
+    """
+    assert k_individuals <= 20, f"Keep a small k_individuals: {k_individuals}"
+
     distances, indices = model.get_nearest_neighbors(query=query, k=k_neighbors)
     indices_on_cpu = indices.cpu()[0].tolist()
     distances_on_cpu = distances.cpu()[0].tolist()
@@ -42,7 +57,6 @@ def _aux_get_k_nearest_individuals(
     if len(counter.keys()) >= k_individuals:
         return {
             "k_neighbors": k_neighbors,
-            "k_individuals": k_individuals,
             "dataset_indices": indices_on_cpu,
             "dataset_labels": list(nearest_ids),
             "dataset_images": list(nearest_images),
@@ -61,6 +75,23 @@ def _aux_get_k_nearest_individuals(
         )
 
 
+def _find_cutoff_index(k: int, dataset_labels: list[str]) -> Optional[int]:
+    """Returns the index for dataset_labels that retrieves exactly k
+    individuals."""
+    if not dataset_labels:
+        return None
+    else:
+        selected_labels = set()
+        cutoff_index = -1
+        for idx, label in enumerate(dataset_labels):
+            if len(selected_labels) == k:
+                break
+            else:
+                selected_labels.add(label)
+                cutoff_index = idx
+        return cutoff_index
+
+
 def get_k_nearest_individuals(
     model: InferenceModel,
     k: int,
@@ -68,6 +99,14 @@ def get_k_nearest_individuals(
     id_to_label: dict,
     dataset: Dataset,
 ) -> dict:
+    """Returns the k nearest individuals using the inference model and a query.
+
+    A dict is returned with the following keys:
+    - dataset_indices: list[int] - list of indices to call get_item on the dataset
+    - dataset_labels: list[int] - labels of the dataset for the given dataset_indices
+    - dataset_images: list[torch.tensor] - chips of the bears
+    - distances: list[float] - distances from the query
+    """
     k_neighbors = k * 5
     k_individuals = k
     result = _aux_get_k_nearest_individuals(
@@ -78,10 +117,28 @@ def get_k_nearest_individuals(
         id_to_label=id_to_label,
         dataset=dataset,
     )
-    return result
+    cutoff_index = _find_cutoff_index(
+        k=k,
+        dataset_labels=result["dataset_labels"],
+    )
+    return {
+        "dataset_indices": result["dataset_indices"][:cutoff_index],
+        "dataset_labels": result["dataset_labels"][:cutoff_index],
+        "dataset_images": result["dataset_images"][:cutoff_index],
+        "bearids": result["bearids"][:cutoff_index],
+        "distances": result["distances"][:cutoff_index],
+    }
 
 
 def index_by_bearid(k_nearest_individuals: dict) -> dict:
+    """Returns a dict where keys are bearid labels (eg. 'bf_480') and the
+    values are list of the following dict shapes:
+
+    - dataset_label: int
+    - dataset_image: torch.tensor
+    - distance: float
+    - dataset_index: int
+    """
     result = {}
     for dataset_label, dataset_image, distance, bearid, dataset_index in zip(
         k_nearest_individuals["dataset_labels"],
@@ -104,14 +161,18 @@ def index_by_bearid(k_nearest_individuals: dict) -> dict:
 
 
 def sample_chips_from_bearid(
-    bear_id: str, df_split: pd.DataFrame, n: int = 4
+    bear_id: str,
+    df_split: pd.DataFrame,
+    n: int = 4,
 ) -> list[Path]:
     xs = df_split[df_split["bear_id"] == bear_id].sample(n=n)["path"].tolist()
     return [Path(x) for x in xs]
 
 
 def make_indexed_samples(
-    bear_ids: list[str], df_split: pd.DataFrame, n: int = 4
+    bear_ids: list[str],
+    df_split: pd.DataFrame,
+    n: int = 4,
 ) -> dict[str, list[Path]]:
     return {
         bear_id: sample_chips_from_bearid(bear_id=bear_id, df_split=df_split, n=n)
@@ -119,21 +180,21 @@ def make_indexed_samples(
     }
 
 
-def compute_knn(
-    model: InferenceModel,
-    dataset: Dataset,
-    knn_index_filepath: Path,
-) -> None:
-    """Retrieves or computes the KNN embeddings of the model."""
-    # Cache the KNN index
-    if knn_index_filepath.exists():
-        logging.info("Loading from cache")
-        model.load_knn_func(filename=str(knn_index_filepath))
-    else:
-        logging.info("Training KNN")
-        model.train_knn(dataset)
-        os.makedirs(knn_index_filepath.parent, exist_ok=True)
-        model.save_knn_func(filename=str(knn_index_filepath))
+# def compute_knn(
+#     model: InferenceModel,
+#     dataset: Dataset,
+#     knn_index_filepath: Path,
+# ) -> None:
+#     """Retrieves or computes the KNN embeddings of the model."""
+#     # Cache the KNN index
+#     if knn_index_filepath.exists():
+#         logging.info("Loading from cache")
+#         model.load_knn_func(filename=str(knn_index_filepath))
+#     else:
+#         logging.info("Training KNN")
+#         model.train_knn(dataset)
+#         os.makedirs(knn_index_filepath.parent, exist_ok=True)
+#         model.save_knn_func(filename=str(knn_index_filepath))
 
 
 def make_id_to_label(id_mapping: pd.DataFrame) -> dict[int, str]:
@@ -234,7 +295,7 @@ def run(
     indexed_samples = make_indexed_samples(
         bear_ids=bear_ids,
         df_split=df_split,
-        n=n_samples_per_individual - 1,
+        n=n_samples_per_individual,
     )
     prediction_dir = output_dir
     os.makedirs(prediction_dir, exist_ok=True)
