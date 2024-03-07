@@ -608,14 +608,6 @@ bearidentification_metriclearning: bearidentification_data_split bearidentificat
 # End to end pipeline command examples
 # ------------------------------------
 
-# package_pipeline:
-# 	python ./scripts/bearidentification/metriclearning/package_pipeline.py \
-# 	  --instance-segmentation-weights-filepath ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_baseline/weights/best.pt \
-# 	  --metriclearning-model-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/model.pth \
-# 	  --output-filepath ./data/06_models/pipeline/metriclearning/packaged-pipeline.pth \
-# 	  --output-dir ./data/06_models/pipeline/metriclearning/ \
-# 	  --loglevel "info"
-
 package_pipeline:
 	python ./scripts/bearidentification/metriclearning/package_pipeline.py \
 	  --instance-segmentation-weights-filepath ./data/06_models/bearfacesegmentation/yolov8/roboflow_relabelled_baseline/weights/best.pt \

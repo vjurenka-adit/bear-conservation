@@ -3,11 +3,17 @@
 In this section, we describe how to train and run the
 bearidentification model.
 
-![Identification of a bear](./assets/images/model_output/identification/prediction_at_5_individuals_5_samples_per_individual.png)
+<img src="./assets/images/model_output/identification/prediction_at_5_individuals_5_samples_per_individual.png" alt="Identification of a bear" width="550px" />
 
 ## Data
 
 ### Chips
+
+A chip is a segmented bear face with background removed.
+
+Some examples below:
+
+![Chip 1](./assets/images/chips/image1.jpg) ![Chip 2](./assets/images/chips/image2.jpg) ![Chip 3](./assets/images/chips/image3.jpg)
 
 Run the following command to install the chips:
 
@@ -66,6 +72,20 @@ file, one can run the following command:
 ```sh
 make bearidentification_metriclearning_eval_summary
 ```
+
+For each model, an evaluation folder is created with the following artifacts:
+
+- embeddings visualizations for the different splits (train, val, test)
+
+![Embeddings train split](./assets/images/evaluation/embeddings/umap_epoch_1_train.png) ![Embeddings val split](./assets/images/evaluation/embeddings/umap_epoch_66_val_small.png)
+
+- metric reports csv file that contains the following metrics for the different splits (train/val/test): __precision@1/3/5/10, AMI, NMI, mAP__
+
+### Embeddings
+
+Visualize the embeddings on the different splits is a great way to gain confidence that the model works as expected. Is it possible to visualize how the model improve its embeddings overtime.
+
+<img src="./assets/images/evaluation/embeddings/animated-embeddings.gif" alt="Embeddings improvement over training">
 
 ## Packaging the pipeline
 

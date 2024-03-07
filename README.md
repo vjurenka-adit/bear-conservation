@@ -3,6 +3,10 @@
 This folder contains data and work done during the AI for bears
 challenge organized by [FruitpunchAI](https://www.fruitpunch.ai/).
 
+It contains a collection of software packages to work with bears.
+
+<img src="./docs/development/assets/images/model_output/facedetection/image1.jpg" width="250" alt="Detected bear face using the bear face detector" /> <img src="./docs/development/assets/images/model_output/pose/image1.jpg" width="250" alt="Pose of a bear using the bearfacelandmarkdetector" /> <img src="./docs/development/assets/images/model_output/facesegmentation/image1.jpg" width="250" alt="Segmented face of a bear" />
+
 ## Introduction
 
 Bears, particularly brown bears, are not only charismatic but also serve as
@@ -97,7 +101,7 @@ python ./scripts/identify.py \
   --output-dir ./data/07_model_output/identify/default/
 ```
 
-![Identification of a bear](./docs/development/assets/images/model_output/identification/prediction_at_5_individuals_5_samples_per_individual.png)
+<img src="./docs/development/assets/images/model_output/identification/prediction_at_5_individuals_5_samples_per_individual.png" alt="Identification of a bear" width="550px" />
 
 ## Development
 
@@ -111,3 +115,15 @@ This project was hosted and made possible by the following organizations:
 - [FruitpunchAI](https://app.fruitpunch.ai/challenge/ai-for-bears)
 - [BearID Project](https://bearresearch.org/)
 - [HackThePlanet](https://www.hack-the-planet.io/)
+
+## Literature
+
+- [Circle Loss](./references/litterature/papers/circle_loss.pdf)
+- [Dolphin ID](./references/litterature/papers/dolphin_id.pdf)
+- [FaceNet](./references/litterature/papers/facenet.pdf)
+- [DataAugmentation with pseudo infrared vision](./references/litterature/papers/data-augmentation-with-pseudo-infrared-night-vision.pdf)
+- [Automated Facial Recognition For Wildlife that lacks unique markings](./references/litterature/papers/Ecology_and_Evolution_2020_Clapham_Automated_facial_recognition_for_wildlife_that_lack_unique_markings.pdf)
+- [Multispecies Facial Detection For Indiviual Identification](./references/litterature/papers/multispeciesfacialdetectionforindividualidentification.pdf)
+- [Wildlife Dataset Re-ID](./references/litterature/papers/wildlifedatasetreid.pdf)
+- [The Animal ID problem](./references/litterature/papers/theanimalidproblem.pdf)
+- [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](./references/litterature/papers/arcface.pdf)
