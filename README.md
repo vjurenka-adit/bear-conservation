@@ -7,6 +7,9 @@ It contains a collection of software packages to work with bears.
 
 <img src="./docs/development/assets/images/model_output/facedetection/image1.jpg" width="250" alt="Detected bear face using the bear face detector" /> <img src="./docs/development/assets/images/model_output/pose/image1.jpg" width="250" alt="Pose of a bear using the bearfacelandmarkdetector" /> <img src="./docs/development/assets/images/model_output/facesegmentation/image1.jpg" width="250" alt="Segmented face of a bear" />
 
+It provides face detection, face segmentation, facial landmark detection and
+bear re-identification models.
+
 ## Introduction
 
 Bears, particularly brown bears, are not only charismatic but also serve as

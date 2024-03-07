@@ -22,7 +22,7 @@ def make_cli_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--chips-root-dir",
         help="root directory containing the bearID chips.",
-        default="data/07_model_output/bearfacesegmentation/chips/yolov8/resized/square_dim_300/",
+        default="data/07_model_output/bearfacesegmentation/chips/all/resized/square_dim_300/",
     )
     parser.add_argument(
         "--extractor",
