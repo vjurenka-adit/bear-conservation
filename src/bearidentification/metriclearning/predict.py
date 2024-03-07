@@ -88,7 +88,7 @@ def _find_cutoff_index(k: int, dataset_labels: list[str]) -> Optional[int]:
                 break
             else:
                 selected_labels.add(label)
-                cutoff_index = idx
+                cutoff_index = idx + 1
         return cutoff_index
 
 

@@ -643,7 +643,5 @@ identify_example:
 
 identify_default:
 	python ./scripts/identify.py \
-	  --k 5 \
 	  --source-path ./data/09_external/identify/P1250243.JPG \
-	  --output-dir ./data/07_model_output/identify/default/ \
-	  --loglevel "info"
+	  --output-dir ./data/07_model_output/identify/default/
