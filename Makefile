@@ -324,6 +324,9 @@ bearidentification_data_download_generated_chips_british_columbia:
 bearidentification_data_merge_generated_chips:
 	./scripts/data/merge_generated_chips.sh
 
+bearidentification_data_install_chips:
+	./scripts/bearidentification/data/chips/install.sh
+
 bearidentification_data_split_by_individual:
 	python ./scripts/bearidentification/data/split/by_individual.py \
 	  --save-path ./data/04_feature/bearidentification/bearid/split/ \
@@ -623,7 +626,7 @@ package_pipeline:
 
 install_packaged_pipeline:
 	python ./scripts/install_packaged_pipeline.py \
-	  --packaged-pipeline-archive-filepath ./data/06_models/pipeline/metriclearning/packaged_pipeline.zip \
+	  --packaged-pipeline-archive-filepath ./data/09_external/artifacts/packaged_pipeline.zip \
 	  --loglevel "info"
 
 
@@ -635,7 +638,7 @@ identify_example:
 	python ./scripts/identify.py \
 	  --source-path ./data/09_external/identify/P1250243.JPG \
 	  --output-dir ./data/07_model_output/identify/example/ \
-	  --k 15 \
+	  --k 3 \
 	  --metriclearning-model-filepath ./data/06_models/pipeline/metriclearning/bearidentification/model.pt \
 	  --metriclearning-knn-index-filepath ./data/06_models/pipeline/metriclearning/bearidentification/knn.index \
 	  --instance-segmentation-weights-filepath ./data/06_models/pipeline/metriclearning/bearfacesegmentation/model.pt \

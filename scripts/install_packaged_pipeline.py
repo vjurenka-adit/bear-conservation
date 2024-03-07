@@ -50,7 +50,7 @@ def validate_parsed_args(args: dict) -> bool:
         }
         md5_hash = md5(args["packaged_pipeline_archive_filepath"])
         logging.info(f"archive md5 hash: {md5_hash}")
-        if not md5_hash in MD5_VERIFIED_HASHES:
+        if md5_hash not in MD5_VERIFIED_HASHES:
             logging.error("invalid packaged-pipeline, md5 hashes do not match")
             return False
         else:

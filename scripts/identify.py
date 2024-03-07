@@ -19,7 +19,7 @@ def make_cli_parser() -> argparse.ArgumentParser:
         "--k",
         help="k closest embeddings to return.",
         type=int,
-        default=3,
+        default=5,
     )
     parser.add_argument(
         "--metriclearning-model-filepath",

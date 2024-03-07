@@ -4,6 +4,7 @@ data/03_primary/*
 data/04_feature/*
 data/05_model_input/*
 data/06_models/*
+!data/06_models/pipeline/metriclearning/packaged_pipeline.zip
 data/07_model_output/*
 data/08_reporting/*
 !.gitkeep
