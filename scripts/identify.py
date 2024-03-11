@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 import bearfacesegmentation.chip
 import bearfacesegmentation.predict
-import bearidentification.metriclearning.predict
+import bearidentification.metriclearning.model.predict
 
 
 def make_cli_parser() -> argparse.ArgumentParser:
@@ -121,7 +121,7 @@ def handle_prediction_yolov8(prediction_yolov8, i: int, args: dict) -> None:
     cv2.imwrite(str(chip_save_path / "padded.png"), padded_cropped_head)
     cv2.imwrite(str(chip_save_path / "resized.png"), resized_padded_cropped_head)
 
-    bearidentification.metriclearning.predict.run(
+    bearidentification.metriclearning.model.predict.run(
         model_filepath=args["metriclearning_model_filepath"],
         k=args["k"],
         knn_index_filepath=args["metriclearning_knn_index_filepath"],

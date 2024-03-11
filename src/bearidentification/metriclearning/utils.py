@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from torchvision.transforms import v2
 
-from bearidentification.metriclearning.embedder import MLP
+from bearidentification.metriclearning.model.embedder import MLP
 
 
 def get_best_device() -> torch.device:
@@ -56,9 +56,27 @@ def yaml_write(to: Path, data: dict, dumper=MyDumper) -> None:
         )
 
 
-# TODO
 def validate_run_config(config: dict) -> bool:
-    return True
+    keyset_config = set(config.keys())
+    keyset_minimum = {
+        "batch_size",
+        "num_epochs",
+        "patience",
+        "model",
+        "loss",
+        "sampler",
+        "optimizers",
+        "miner",
+    }
+    keyset_maximum = keyset_minimum | {"data_augmentation"}
+    if keyset_config < keyset_minimum:
+        logging.error(f"Does not contain the required keys {keyset_minimum}")
+        return False
+    elif keyset_config > keyset_maximum:
+        logging.error(f"Contains unsupported keys {keyset_maximum}")
+        return False
+    else:
+        return True
 
 
 def load_weights(

@@ -382,7 +382,7 @@ bearidentification_data_lightglue_keypoints_256_generate:
 # ---------
 
 bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "baseline_circleloss_dumb_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -393,7 +393,7 @@ bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_provide
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_individual:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "baseline_circleloss_dumb_nano_by_individual" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -404,7 +404,7 @@ bearidentification_metriclearning_train_baseline_circleloss_dumb_nano_by_individ
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_baseline_tripletmarginloss_dumb_nano_by_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "baseline_tripletmarginloss_dumb_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -415,7 +415,7 @@ bearidentification_metriclearning_train_baseline_tripletmarginloss_dumb_nano_by_
 	  --loglevel "info"
 	
 bearidentification_metriclearning_train_baseline_circleloss_nano_by_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "baseline_circleloss_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -426,7 +426,7 @@ bearidentification_metriclearning_train_baseline_circleloss_nano_by_provided_bea
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_baseline_tripletmarginloss_nano_by_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "baseline_tripletmarginloss_nano_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -437,7 +437,7 @@ bearidentification_metriclearning_train_baseline_tripletmarginloss_nano_by_provi
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_baseline_tripletmarginloss_full_by_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "baseline_tripletmarginloss_full_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -448,7 +448,7 @@ bearidentification_metriclearning_train_baseline_tripletmarginloss_full_by_provi
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_baseline_circleloss_full_by_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "baseline_circleloss_full_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -465,7 +465,7 @@ bearidentification_metriclearning_train_baselines: bearidentification_metriclear
 # -----------
 
 bearidentification_metriclearning_train_best_by_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "best_split_by_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -476,7 +476,7 @@ bearidentification_metriclearning_train_best_by_provided_bearid:
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_best_by_individual:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "best_split_by_individual" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -493,7 +493,7 @@ bearidentification_metriclearning_train_best: bearidentification_metriclearning_
 ## -----------
 
 bearidentification_metriclearning_train_experiment_convnext_tiny_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "experiment_circleloss_convnext_tiny_provided_bear" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -504,7 +504,7 @@ bearidentification_metriclearning_train_experiment_convnext_tiny_provided_bearid
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_experiment_convnext_tiny_individual:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "experiment_circleloss_convnext_tiny_individual" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -515,7 +515,7 @@ bearidentification_metriclearning_train_experiment_convnext_tiny_individual:
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_experiment_resnet18_embedding_size_1024_individual:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "experiment_circleloss_resnet18_embedding_size_1024_individual" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -526,7 +526,7 @@ bearidentification_metriclearning_train_experiment_resnet18_embedding_size_1024_
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_experiment_arcfaceloss_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "experiment_arcfaceloss_resnet18_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -537,7 +537,7 @@ bearidentification_metriclearning_train_experiment_arcfaceloss_provided_bearid:
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_tiny_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "experiment_arcfaceloss_convnext_tiny_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -548,7 +548,7 @@ bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_tiny_pro
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_tiny_individual:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "experiment_arcfaceloss_convnext_tiny_individual" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -559,7 +559,7 @@ bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_tiny_ind
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_experiment_arcfaceloss_convnext_large_provided_bearid:
-	python ./scripts/bearidentification/metriclearning/train.py \
+	python ./scripts/bearidentification/metriclearning/model/train.py \
 	  --random-seed 0 \
 	  --experiment-name "experiment_arcfaceloss_convnext_large_provided_bearid" \
 	  --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
@@ -573,12 +573,21 @@ bearidentification_metriclearning_train_experiments: bearidentification_metricle
 
 bearidentification_metriclearning_train: bearidentification_metriclearning_train_baselines bearidentification_metriclearning_train_best bearidentification_metriclearning_train_experiments
 
+# ---------------------
+# Hyperparameter Search
+# ---------------------
+
+bearidentification_metriclearning_train_hyperparameter_search:
+	python ./scripts/bearidentification/metriclearning/model/hyperparameter_search.py \
+	  --n 10 \
+	  --loglevel "info"
+
 # ----------
 # Prediction
 # ----------
 
 bearidentification_metriclearning_predict:
-	python ./scripts/bearidentification/metriclearning/predict.py \
+	python ./scripts/bearidentification/metriclearning/model/predict.py \
 	  --args-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/args.yaml \
 	  --embedder-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/embedder.pth \
 	  --trunk-weights-filepath ./data/06_models/bearidentification/metric_learning/baseline_circleloss_nano_by_provided_bearid/model/weights/best/trunk.pth \
@@ -593,11 +602,11 @@ bearidentification_metriclearning_predict:
 #  ----------
 
 bearidentification_metriclearning_eval_summary:
-	python ./scripts/bearidentification/metriclearning/eval_all.py \
+	python ./scripts/bearidentification/metriclearning/model/eval_all.py \
 	  --train-runs-dir ./data/06_models/bearidentification/metric_learning/ \
 	  --output-dir ./data/07_model_output/bearidentification/metriclearning/ \
 	  --loglevel "info"
-	python ./scripts/bearidentification/metriclearning/eval_summary.py \
+	python ./scripts/bearidentification/metriclearning/model/eval_summary.py \
 	  --evaluations-root-dir ./data/07_model_output/bearidentification/metriclearning/ \
 	  --loglevel "info"
 
