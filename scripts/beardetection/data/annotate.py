@@ -1,7 +1,6 @@
 import argparse
 import glob
 import logging
-from os import path
 from pathlib import Path
 
 from beardetection.data.utils import annotate, get_best_device, load_groundingDINO_model
@@ -102,8 +101,8 @@ if __name__ == "__main__":
             device=device,
             model_checkpoint_path=args["model_checkpoint_path"],
         )
-        print(model)
-        text_prompt = "body of a bear"
+        text_prompt = "bear"
+        token_spans = [[(0, 4)]]
         input_dir = args["input_dir_hack_the_planet"]
         output_dir = args["output_dir"]
         logging.info(
@@ -112,6 +111,7 @@ if __name__ == "__main__":
         annotate(
             model=model,
             text_prompt=text_prompt,
+            token_spans=token_spans,
             image_paths=image_filepaths,
             input_dir=input_dir,
             output_dir=output_dir,

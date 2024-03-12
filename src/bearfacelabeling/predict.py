@@ -1,8 +1,7 @@
 from os import path
 
-import torch
-
 import groundingdino.datasets.transforms as T
+import torch
 from groundingdino.models import build_model
 from groundingdino.util import box_ops
 from groundingdino.util.slconfig import SLConfig
@@ -119,8 +118,7 @@ class Model:
         )
         _ = self.model.eval()
 
-    def predict(self, image, text_prompt: str = "head of bear"):
-        token_spans = [[(0, 4)]]
+    def predict(self, image, text_prompt: str = "bear", token_spans=[[(0, 4)]]):
         box_threshold = 0.27
         text_threshold = 0.25
 

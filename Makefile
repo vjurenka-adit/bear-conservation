@@ -663,3 +663,15 @@ beardetection_data_annotate:
 	python ./scripts/beardetection/data/annotate.py \
 	  --device "cpu" \
 	  --loglevel "info"
+
+beardetection_data_yolov8_bbox:
+	python ./scripts/beardetection/data/yolov8_bbox.py \
+	  --loglevel "info"
+
+beardetection_data_build_model_input:
+	python ./scripts/beardetection/data/build_model_input.py \
+	  --loglevel "info"
+
+beardetection_train:
+	python ./scripts/beardetection/model/train.py \
+	  --loglevel "info"

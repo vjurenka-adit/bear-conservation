@@ -35,13 +35,18 @@ def load_groundingDINO_model(device: str, model_checkpoint_path: Path):
 def annotate(
     model,
     text_prompt: str,
+    token_spans: list,
     image_paths: list[str],
     input_dir: Path,
     output_dir: Path,
 ) -> None:
     for image_path in tqdm(image_paths):
         image = Image.open(image_path)
-        bbox = model.predict(image, text_prompt=text_prompt)
+        bbox = model.predict(
+            image,
+            text_prompt=text_prompt,
+            token_spans=token_spans,
+        )
 
         relative_image_path = path.relpath(image_path, input_dir)
         relative_ann_path = path.splitext(relative_image_path)[0] + ".txt"
