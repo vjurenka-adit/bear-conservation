@@ -64,6 +64,18 @@ To train the baselines, run the following command:
 make bearidentification_metriclearning_train_baselines
 ```
 
+### Hyperparameter Search
+
+Random hyperparameter search is setup and can be run with the following command:
+
+```sh
+make bearidentification_metriclearning_train_hyperparameter_search
+```
+
+By default, it generates 10 configs using the parameter
+space and setup a train run for each, logging the
+results.
+
 ## Evaluation
 
 To aggregate the performances of the diffent trained models in a csv

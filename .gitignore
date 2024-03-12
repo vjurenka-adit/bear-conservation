@@ -10,8 +10,6 @@ data/08_reporting/*
 !.gitkeep
 src/*.egg-info/
 __pycache__
-.ipynb_checkpoints
-.virtual_documents
 
 vendors/
 
@@ -38,3 +36,4 @@ notebooks/bearidentification/metric_learning/cifar-10*
 notebooks/bearidentification/datasplit/example_logs/
 notebooks/bearidentification/datasplit/example_tensorboard/
 notebooks/bearidentification/datasplit/runs/
+src/groundingdino

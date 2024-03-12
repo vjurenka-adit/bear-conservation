@@ -24,6 +24,9 @@ install_local_packages:
 install_vendor_packages:
 	./scripts/install_lightglue.sh
 
+install_grounding_dino_weights:
+	./scripts/install_grounding_dino_weights.sh
+
 setup: install_dependencies install_local_packages install_vendor_packages
 
 dev_notebook:
@@ -649,3 +652,12 @@ identify_default:
 	python ./scripts/identify.py \
 	  --source-path ./data/09_external/identify/P1250243.JPG \
 	  --output-dir ./data/07_model_output/identify/default/
+
+
+# -------------
+# beardetection
+# -------------
+
+beardetection_data_annotate:
+	python ./scripts/beardetection/data/annotate.py \
+	  --loglevel "info"
