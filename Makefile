@@ -661,4 +661,5 @@ identify_default:
 
 beardetection_data_annotate:
 	python ./scripts/beardetection/data/annotate.py \
+	  --device "cpu" \
 	  --loglevel "info"

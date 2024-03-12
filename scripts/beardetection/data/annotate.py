@@ -25,7 +25,7 @@ def make_cli_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--model-checkpoint-path",
         help="GroundingDINO model checkpoint path",
-        default="./data/06_models/GroundingDINO/groundingdino_swint_ogc.pth",
+        default="./vendors/GroundingDINO/weights/groundingdino_swint_ogc.pth",
         type=Path,
     )
     parser.add_argument(
