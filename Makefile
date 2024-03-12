@@ -22,10 +22,11 @@ install_local_packages:
 	python -m pip install -e .
 
 install_vendor_packages:
-	./scripts/install_lightglue.sh
+	./scripts/install_lightglue.sh && \
+        ./scripts/install_grounding_dino.sh
 
-install_grounding_dino_weights:
-	./scripts/install_grounding_dino_weights.sh
+install_grounding_dino:
+	./scripts/install_grounding_dino.sh
 
 setup: install_dependencies install_local_packages install_vendor_packages
 
