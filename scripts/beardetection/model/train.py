@@ -36,7 +36,7 @@ def make_cli_parser() -> argparse.ArgumentParser:
         default=640,
     )
     parser.add_argument(
-        "--close_mosaic",
+        "--close-mosaic",
         type=int,
         default=10,
     )
