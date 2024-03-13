@@ -679,13 +679,15 @@ beardetection_data_build_model_input:
 beardetection_train_baseline:
 	python ./scripts/beardetection/model/train.py \
 	  --experiment-name "baseline" \
+	  --batch 64 \
 	  --loglevel "info"
 
 beardetection_train_best:
 	python ./scripts/beardetection/model/train.py \
 	  --experiment-name "best" \
+	  --batch 64 \
 	  --epochs 200 \
-	  --close-mosaic 35 \
+	  --close-mosaic 50 \
 	  --imgsz 1024 \
 	  --degrees 30 \
 	  --loglevel "info"
