@@ -1,0 +1,241 @@
+import argparse
+import logging
+from pathlib import Path
+
+from dateutil import parser
+
+from beardetection.data.split import split_by_camera_and_date
+from beardetection.data.utils import (
+    exif,
+    get_annotation_filepaths,
+    label_filepath_to_image_filepath,
+)
+
+
+def make_cli_parser() -> argparse.ArgumentParser:
+    """Makes the CLI parser."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--input-dir-hack-the-planet",
+        help="path pointing to the hack the planet dataset",
+        default="./data/01_raw/Hack the Planet",
+        type=Path,
+    )
+    parser.add_argument(
+        "--input-dir",
+        help="path pointing to the yolov8 bbox annotations",
+        default="./data/04_feature/beardetection/bearbody/HackThePlanet/",
+        type=Path,
+    )
+    parser.add_argument(
+        "--output-dir",
+        help="path to save the split",
+        default="./data/04_feature/beardetection/split/",
+        type=Path,
+    )
+    parser.add_argument(
+        "-log",
+        "--loglevel",
+        default="warning",
+        help="Provide logging level. Example --loglevel debug, default=warning",
+    )
+    return parser
+
+
+def validate_parsed_args(args: dict) -> bool:
+    """Returns whether the parsed args are valid."""
+    return True
+
+
+def add_datetime(X: list[dict]) -> list[dict]:
+    Y = []
+    for x in X:
+        data = x["exif"]
+        year = None
+        month = None
+        day = None
+        hour = None
+        minute = None
+        if data and data.get("DateTime", None):
+            try:
+                t = parser.parse(data["DateTime"])
+                year = t.year
+                month = t.month
+                day = t.day
+                hour = t.hour
+                minute = t.minute
+            finally:
+                Y.append(
+                    {
+                        **x,
+                        "year": year,
+                        "month": month,
+                        "day": day,
+                        "hour": hour,
+                        "minute": minute,
+                    }
+                )
+    return Y
+
+
+def add_image_filepath(
+    input_dir_hack_the_planet: Path,
+    input_dir: Path,
+    X: list[dict],
+) -> list[dict]:
+    return [
+        {
+            **x,
+            "image_filepath": label_filepath_to_image_filepath(
+                input_dir_hack_the_planet=input_dir_hack_the_planet,
+                input_dir=input_dir,
+                label_filepath=x["label_filepath"],
+            ),
+        }
+        for x in X
+    ]
+
+
+def add_camera_id(X: list[dict]) -> list[dict]:
+    return [{**x, "camera_id": Path(x["image_filepath"]).parent.name} for x in X]
+
+
+def make_X(input_dir_hack_the_planet: Path, input_dir: Path) -> list[dict]:
+    """Returns the datapoints, which are a list of dicts containing the
+    following keys:
+
+    - label_filepath: str
+    - image_filepath: str
+    - camera_id:  str
+    - year, month, day, hour, minute: integers
+    - exif: dict
+    """
+    annotation_filepaths = get_annotation_filepaths(input_dir=input_dir)
+    X = [{"label_filepath": label_filepath} for label_filepath in annotation_filepaths]
+    X_image = add_image_filepath(
+        X=X,
+        input_dir_hack_the_planet=input_dir_hack_the_planet,
+        input_dir=input_dir,
+    )
+    X_filtered = [x for x in X_image if x["image_filepath"]]
+    logging.info(f"Found {len(X) - len(X_filtered)} missing images")
+    X_exif = [{**x, "exif": exif(x["image_filepath"])} for x in X_filtered]
+    X_datetime = add_datetime(X_exif)
+    X_camera_id = add_camera_id(X_datetime)
+    return X_camera_id
+
+
+if __name__ == "__main__":
+    cli_parser = make_cli_parser()
+    args = vars(cli_parser.parse_args())
+    logging.basicConfig(level=args["loglevel"].upper())
+    if not validate_parsed_args(args):
+        exit(1)
+    else:
+        logging.info(args)
+        input_dir = args["input_dir"]
+        output_dir = args["output_dir"]
+        input_dir_hack_the_planet = args["input_dir_hack_the_planet"]
+        X = make_X(
+            input_dir_hack_the_planet=input_dir_hack_the_planet,
+            input_dir=input_dir,
+        )
+        df_split = split_by_camera_and_date(X=X)
+        # df_split = random_split(X=X_filtered)
+        print(df_split.head(n=10))
+        output_dir.mkdir(exist_ok=True, parents=True)
+        df_split.to_csv(output_dir / "data_split.csv", sep=";")
+
+## REPL driven
+# input_dir = Path("./data/04_feature/beardetection/bearbody/HackThePlanet/")
+# input_dir_hack_the_planet = Path("./data/01_raw/Hack the Planet/")
+
+# X = make_X(
+#     input_dir_hack_the_planet=input_dir_hack_the_planet,
+#     input_dir=input_dir,
+# )
+
+# import pandas as pd
+
+# X[:1]
+# n = len(X)
+# train_ratio = 0.8
+# val_ratio = 0.5
+# train_size = int(train_ratio * n)
+# val_size = int(val_ratio * (n - train_size))
+# df = pd.DataFrame(X)
+# df.head()
+
+# g = df.groupby(["year", "month", "day", "camera_id"])
+# g.head()
+# # key -> list of indices
+# g.groups
+
+# G = list(g.groups.items())
+# random_seed = 0
+# import random
+
+# random.Random(random_seed).shuffle(G)
+# list(g.groups.items())[3]
+# idx = list(g.groups.items())[3][1]
+# idx2 = list(g.groups.items())[4][1]
+# idx
+# idx2
+# idx_merge = idx.copy().append(idx2)
+# idx_merge
+# idx.append(idx2)
+# df.iloc[idx]
+
+# len(list(g.groups.items())[0][1])
+
+# n = len(G)
+# train_ratio = 0.8
+# val_ratio = 0.5
+# train_size = int(train_ratio * n)
+# val_size = int(val_ratio * (n - train_size))
+
+# G_train = G[:train_size]
+# G_val = G[train_size : train_size + val_size]
+# G_test = G[train_size + val_size :]
+
+# G_train
+# G_val
+# G_test
+
+# type(G_train)
+
+
+# indices = []
+# # result = pd.Index([], dtype="int64")
+# for _, idx in G_test:
+#     print(idx)
+#     # result.append(idx)
+#     indices.extend(list(idx))
+#     # result.extend(idx)
+# result = pd.Index(indices, dtype="int64")
+
+
+# len(to_indices(G_val))
+# len(to_indices(G_train))
+# len(to_indices(G_test))
+
+# df.iloc[result]
+
+# df_train = df.iloc[to_indices(G_train)].copy()
+# df_val = df.iloc[to_indices(G_val)].copy()
+# df_test = df.iloc[to_indices(G_test)].copy()
+# df_train.head()
+# df_train["split"] = "train"
+# df_val["split"] = "val"
+# df_test["split"] = "test"
+
+# df_split = pd.concat([df_train, df_val, df_test])
+# df_split.info()
+# df_train
+
+
+# df[]
+
+# list(G_test[0][1])
+
+# result

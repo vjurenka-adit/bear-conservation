@@ -1,9 +1,13 @@
+import logging
 from os import path
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 import torch
+import yaml
 from PIL import Image
+from PIL.ExifTags import TAGS
 from tqdm import tqdm
 
 import bearfacelabeling.predict
@@ -91,3 +95,80 @@ def parse_annotations(
     df = pd.DataFrame.from_dict({"img": anns.keys(), "bbox": anns.values()})
 
     return {"ok": df, "ko": df_image_pb}
+
+
+class MyDumper(yaml.Dumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super(MyDumper, self).increase_indent(flow, False)
+
+
+def write_data_yaml(path: Path) -> None:
+    """Writes the `data.yaml` file necessary for YOLOv8 training at `path`
+    location."""
+    data = {
+        "train": "./train/images",
+        "val": "./val/images",
+        "test": "./test/images",
+        "nc": 1,
+        "names": ["bearbody"],
+    }
+    with open(path / "data.yaml", "w") as f:
+        yaml.dump(data, f, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
+
+
+def get_annotation_filepaths(input_dir: Path) -> list[Path]:
+    return list(input_dir.rglob("*.txt"))
+
+
+def label_filepath_to_image_filepath(
+    input_dir_hack_the_planet: Path,
+    input_dir: Path,
+    label_filepath: Path,
+) -> Optional[Path]:
+    relative_label_filepath = label_filepath.relative_to(input_dir)
+    possible_image_filepaths = []
+    for extension in ["jpg", "PNG", "JPG"]:
+        image_filepath = (
+            input_dir_hack_the_planet
+            / relative_label_filepath.parent
+            / f"{relative_label_filepath.stem}.{extension}"
+        )
+        possible_image_filepaths.append(image_filepath)
+
+    for possible_image_filepath in possible_image_filepaths:
+        if possible_image_filepath.exists():
+            return possible_image_filepath
+
+    return None
+
+
+def exif(image_filepath: Path) -> dict:
+    """Returns exif data from the image."""
+    if not image_filepath.exists():
+        logging.error(f"image_filepath {image_filepath} not found")
+        return {}
+    else:
+        try:
+            image = Image.open(image_filepath)
+            return {TAGS[k]: v for k, v in image.getexif().items() if k in TAGS}
+        except:
+            logging.error(f"Can't extract exif data from {image_filepath}")
+            return {}
+
+
+## REPL
+# image_filepath = Path(
+#     "data/01_raw/Hack the Planet/images/Season2 - bears only/22RucarAG/149_Mara mare/20190320_20190412/Bushn_CC00Y8/03200029.JPG"
+# )
+
+# data = exif(image_filepath)
+
+# data["DateTime"]
+
+# from dateutil import parser
+
+# t = parser.parse(timestr=data["DateTime"])
+# t.year
+# t.month
+# t.day
+# t

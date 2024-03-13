@@ -668,10 +668,24 @@ beardetection_data_yolov8_bbox:
 	python ./scripts/beardetection/data/yolov8_bbox.py \
 	  --loglevel "info"
 
+beardetection_data_split:
+	python ./scripts/beardetection/data/split.py \
+	  --loglevel "info"
+
 beardetection_data_build_model_input:
 	python ./scripts/beardetection/data/build_model_input.py \
 	  --loglevel "info"
 
-beardetection_train:
+beardetection_train_baseline:
 	python ./scripts/beardetection/model/train.py \
+	  --experiment-name "baseline" \
+	  --loglevel "info"
+
+beardetection_train_best:
+	python ./scripts/beardetection/model/train.py \
+	  --experiment-name "best" \
+	  --epochs 200 \
+	  --close-mosaic 35 \
+	  --imgsz 1024 \
+	  --degrees 30 \
 	  --loglevel "info"
