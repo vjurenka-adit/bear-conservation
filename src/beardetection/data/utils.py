@@ -45,23 +45,26 @@ def annotate(
     output_dir: Path,
 ) -> None:
     for image_path in tqdm(image_paths):
-        image = Image.open(image_path)
-        bbox = model.predict(
-            image,
-            text_prompt=text_prompt,
-            token_spans=token_spans,
-        )
+        try:
+            image = Image.open(image_path)
+            bbox = model.predict(
+                image,
+                text_prompt=text_prompt,
+                token_spans=token_spans,
+            )
 
-        relative_image_path = path.relpath(image_path, input_dir)
-        relative_ann_path = path.splitext(relative_image_path)[0] + ".txt"
-        ann_path = path.join(output_dir, relative_ann_path)
+            relative_image_path = path.relpath(image_path, input_dir)
+            relative_ann_path = path.splitext(relative_image_path)[0] + ".txt"
+            ann_path = path.join(output_dir, relative_ann_path)
 
-        # Create dir
-        Path(path.dirname(ann_path)).mkdir(parents=True, exist_ok=True)
+            # Create dir
+            Path(path.dirname(ann_path)).mkdir(parents=True, exist_ok=True)
 
-        with open(ann_path, "w") as f:
-            if bbox:
-                f.write(bbox_to_string(bbox))
+            with open(ann_path, "w") as f:
+                if bbox:
+                    f.write(bbox_to_string(bbox))
+        except:
+            logging.warning(f"image {image_path} cannot be read or processed")
 
 
 def parse_annotations(
