@@ -48,7 +48,6 @@ def write_yolov8_annotation(
             g.write(content_with_class)
 
 
-# TODO
 def validate_parsed_args(args: dict) -> bool:
     """Returns whether the parsed args are valid."""
     return True

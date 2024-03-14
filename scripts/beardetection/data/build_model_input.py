@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
-from beardetection.data.utils import write_data_yaml
+from beardetection.data.utils import load_datasplit, write_data_yaml
 
 
 def make_cli_parser() -> argparse.ArgumentParser:
@@ -55,6 +55,26 @@ def validate_parsed_args(args: dict) -> bool:
         return True
 
 
+def copy_over(
+    output_dir: Path,
+    df_row: pd.Series,
+) -> None:
+    """Copy over the labels and images in the correct folders."""
+    split = df_row["split"]
+    src_image_filepath = df_row["image_filepath"]
+    m_src_label_filepath = df_row["label_filepath"]
+
+    dst_image_filepath = output_dir / split / "images" / Path(src_image_filepath).name
+    os.makedirs(dst_image_filepath.parent, exist_ok=True)
+    shutil.copy(src=src_image_filepath, dst=dst_image_filepath)
+    if m_src_label_filepath:
+        dst_label_filepath = (
+            output_dir / split / "labels" / Path(m_src_label_filepath).name
+        )
+        os.makedirs(dst_label_filepath.parent, exist_ok=True)
+        shutil.copy(src=m_src_label_filepath, dst=dst_label_filepath)
+
+
 if __name__ == "__main__":
     cli_parser = make_cli_parser()
     args = vars(cli_parser.parse_args())
@@ -66,7 +86,9 @@ if __name__ == "__main__":
         input_dir = args["input_dir"]
         output_dir = args["output_dir"]
         input_dir_hack_the_planet = args["input_dir_hack_the_planet"]
-        df_split = pd.read_csv(args["data_split"], sep=";")
+        logging.info(f"Loading the datasplit from {args['data_split']}")
+        df_split = load_datasplit(args["data_split"])
+
         logging.info(df_split.head(n=10))
         logging.info(f"Creating dir at {output_dir}")
         output_dir.mkdir(exist_ok=True, parents=True)
@@ -75,21 +97,7 @@ if __name__ == "__main__":
 
         write_data_yaml(output_dir)
 
-        # Copy over the labels and images in the correct folders
-        for idx, row in tqdm(df_split.iterrows()):
-            split = row["split"]
-            src_image_filepath = row["image_filepath"]
-            if src_image_filepath:
-                dst_image_filepath = (
-                    output_dir / split / "images" / Path(src_image_filepath).name
-                )
-                os.makedirs(dst_image_filepath.parent, exist_ok=True)
-                shutil.copy(src=src_image_filepath, dst=dst_image_filepath)
-                src_label_filepath = row["label_filepath"]
-                dst_label_filepath = (
-                    output_dir / split / "labels" / Path(src_label_filepath).name
-                )
-                os.makedirs(dst_label_filepath.parent, exist_ok=True)
-                shutil.copy(src=src_label_filepath, dst=dst_label_filepath)
+        for idx, df_row in tqdm(df_split.iterrows()):
+            copy_over(output_dir=output_dir, df_row=df_row)
 
         exit(0)

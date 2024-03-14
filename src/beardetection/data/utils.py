@@ -1,8 +1,10 @@
+import json
 import logging
 from os import path
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 import torch
 import yaml
@@ -113,7 +115,7 @@ def write_data_yaml(path: Path) -> None:
         "val": "./val/images",
         "test": "./test/images",
         "nc": 1,
-        "names": ["bearbody"],
+        "names": ["bear"],
     }
     with open(path / "data.yaml", "w") as f:
         yaml.dump(data, f, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
@@ -121,6 +123,28 @@ def write_data_yaml(path: Path) -> None:
 
 def get_annotation_filepaths(input_dir: Path) -> list[Path]:
     return list(input_dir.rglob("*.txt"))
+
+
+def is_valid_annotation_filepath(filepath: Path) -> bool:
+    """Checks whether the annotation filepath is valid."""
+    if not filepath.exists():
+        logging.warning(f"invalid annotation in {filepath} - does not exist")
+        return False
+    else:
+        try:
+            with open(filepath, "r") as f:
+                content = f.readline()
+                splitted = content.split(" ")
+                if len(splitted) == 5:
+                    return True
+                else:
+                    logging.warning(
+                        f"invalid annotation in {filepath} - does not have 5 floats"
+                    )
+                    return False
+        except:
+            logging.warning(f"invalid annotation in {filepath} - can't open file")
+            return False
 
 
 def label_filepath_to_image_filepath(
@@ -157,6 +181,68 @@ def exif(image_filepath: Path) -> dict:
         except:
             logging.error(f"Can't extract exif data from {image_filepath}")
             return {}
+
+
+def slurp_json(json_filepath: Path):
+    """Parsers the json filepath and returns its content."""
+    with open(json_filepath, "r") as f:
+        return json.load(f)
+
+
+def is_valid_image_filepath(image_filepath: Path) -> bool:
+    """Checks whether the image_filepath exists and can be read."""
+    if not image_filepath.exists():
+        return False
+    else:
+        try:
+            Image.open(image_filepath)
+            return True
+        except:
+            return False
+
+
+def get_image_filepaths_without_bears(input_dir_hack_the_planet: Path) -> list[Path]:
+    """Returns a list of image filepaths that do not contain bears."""
+    images_root_dir = input_dir_hack_the_planet / "images"
+    coco_filepath = input_dir_hack_the_planet / "coco.json"
+
+    assert images_root_dir.exists()
+    assert coco_filepath.exists()
+
+    logging.info(f"Parsing coco_filepath: {coco_filepath}")
+    coco_data = slurp_json(coco_filepath)
+    if not coco_data:
+        logging.error(f"could not load coco_filepath: {coco_filepath}")
+        return []
+    else:
+        id_to_image_data = {
+            image_data["id"]: image_data for image_data in coco_data["images"]
+        }
+        label_to_class_id = {
+            category["name"]: category["id"] for category in coco_data["categories"]
+        }
+        annotations = coco_data["annotations"]
+        annotations_without_bears = [
+            annotation
+            for annotation in annotations
+            if (annotation["category_id"] != label_to_class_id["bear"])
+        ]
+        image_filepaths_without_bears = [
+            images_root_dir / id_to_image_data[annotation["image_id"]]["file_name"]
+            for annotation in annotations_without_bears
+        ]
+        return [
+            image_filepath
+            for image_filepath in image_filepaths_without_bears
+            if is_valid_image_filepath(image_filepath)
+        ]
+
+
+def load_datasplit(filepath: Path) -> pd.DataFrame:
+    """Loads the datasplit."""
+    df_split = pd.read_csv(filepath, sep=";")
+    df_split = df_split.replace({np.nan: None})
+    return df_split
 
 
 ## REPL

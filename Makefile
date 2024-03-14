@@ -672,6 +672,11 @@ beardetection_data_split:
 	python ./scripts/beardetection/data/split.py \
 	  --loglevel "info"
 
+beardetection_data_split2:
+	python ./scripts/beardetection/data/split.py \
+	  --output-dir ./data/04_feature/beardetection/split2/ \
+	  --loglevel "info"
+
 beardetection_data_build_model_input:
 	python ./scripts/beardetection/data/build_model_input.py \
 	  --loglevel "info"
