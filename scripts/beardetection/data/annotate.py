@@ -3,7 +3,8 @@ import glob
 import logging
 from pathlib import Path
 
-from beardetection.data.utils import annotate, get_best_device, load_groundingDINO_model
+from beardetection.data.groundingdino import annotate, load_groundingDINO_model
+from beardetection.data.utils import get_best_device
 
 
 def make_cli_parser() -> argparse.ArgumentParser:
