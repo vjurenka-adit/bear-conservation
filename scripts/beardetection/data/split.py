@@ -121,7 +121,7 @@ def make_X(input_dir_hack_the_planet: Path, annotations_input_dir: Path) -> list
     - exif: dict
     """
     annotation_filepaths = get_annotation_filepaths(input_dir=annotations_input_dir)
-    logging.info(f"loading valid annotation filepaths")
+    logging.info("loading valid annotation filepaths")
     X_bears = [
         {"label_filepath": label_filepath, "class": "bear"}
         for label_filepath in tqdm(annotation_filepaths)
@@ -167,9 +167,12 @@ if __name__ == "__main__":
             annotations_input_dir=input_dir,
         )
         df_split = split_by_camera_and_date(X=X)
+        logging.info(df_split.head(n=10))
+        logging.info(df_split.groupby("class").count())
         output_dir.mkdir(exist_ok=True, parents=True)
 
         if args["balance"]:
+            logging.info("rebalancing the df_split")
             df_split_balanced = balance_classes(df_split=df_split)
             logging.info(df_split_balanced.groupby("class").count())
 
@@ -178,8 +181,6 @@ if __name__ == "__main__":
             )
             df_split_balanced.to_csv(output_dir / "data_split.csv", sep=";")
         else:
-            logging.info(df_split.head(n=10))
-            logging.info(df_split.groupby("class").count())
             df_split.to_csv(output_dir / "data_split.csv", sep=";")
 
 

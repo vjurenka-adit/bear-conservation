@@ -139,22 +139,28 @@ def get_image_filepaths_without_bears(input_dir_hack_the_planet: Path) -> list[P
             category["name"]: category["id"] for category in coco_data["categories"]
         }
         annotations = coco_data["annotations"]
-        logging.info(f"loading annotations without bears")
         annotations_without_bears = [
             annotation
             for annotation in tqdm(annotations)
             if (annotation["category_id"] != label_to_class_id["bear"])
         ]
+        logging.info(
+            f"loading annotations without bears {len(annotations_without_bears)}"
+        )
         image_filepaths_without_bears = [
             images_root_dir / id_to_image_data[annotation["image_id"]]["file_name"]
             for annotation in annotations_without_bears
         ]
-        logging.info(f"filtering out invalid image filepaths.")
-        return [
+        logging.info(
+            f"loading image filepaths without bears - {len(image_filepaths_without_bears)}"
+        )
+        result = [
             image_filepath
             for image_filepath in tqdm(image_filepaths_without_bears)
             if is_valid_image_filepath(image_filepath)
         ]
+        logging.info(f"filtering out invalid image filepaths. - {len(result)}")
+        return result
 
 
 def load_datasplit(filepath: Path) -> pd.DataFrame:
