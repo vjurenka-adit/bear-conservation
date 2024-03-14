@@ -193,7 +193,7 @@ def balance_classes(df_split: pd.DataFrame) -> pd.DataFrame:
 
     It can allow a model to train faster and better.
     """
-    df_counts = df_split.groupby("class").count().reset_index("class")
+    df_counts = df_split.copy().groupby("class").count().reset_index("class")
     n_bears = df_counts[df_counts["class"] == "bear"]["image_filepath"].iloc[0]
     n_others = df_counts[df_counts["class"] == "other"]["image_filepath"].iloc[0]
     ratio = n_others / n_bears
@@ -201,7 +201,11 @@ def balance_classes(df_split: pd.DataFrame) -> pd.DataFrame:
     df_bears = df_split[df_split["class"] == "bear"]
     if ratio <= 1:
         keep_bear_indices = downsample_by_group(df=df_bears, ratio=ratio)
+        logging.info(
+            f"keep_bear_indices: {keep_bear_indices} - {len(keep_bear_indices)}"
+        )
         keep_indices = keep_bear_indices.copy().append(df_others.index)
+        logging.info(f"keep_indices: {keep_indices} - {len(keep_indices)}")
         return df_split.iloc[keep_indices]
     else:
         keep_other_indices = downsample_by_group(df=df_others, ratio=ratio)
