@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 from os import path
 from pathlib import Path
 from typing import Optional
@@ -222,18 +223,20 @@ def get_image_filepaths_without_bears(input_dir_hack_the_planet: Path) -> list[P
             category["name"]: category["id"] for category in coco_data["categories"]
         }
         annotations = coco_data["annotations"]
+        logging.info(f"loading annotations without bears")
         annotations_without_bears = [
             annotation
-            for annotation in annotations
+            for annotation in tqdm(annotations)
             if (annotation["category_id"] != label_to_class_id["bear"])
         ]
         image_filepaths_without_bears = [
             images_root_dir / id_to_image_data[annotation["image_id"]]["file_name"]
             for annotation in annotations_without_bears
         ]
+        logging.info(f"filtering out invalid image filepaths.")
         return [
             image_filepath
-            for image_filepath in image_filepaths_without_bears
+            for image_filepath in tqdm(image_filepaths_without_bears)
             if is_valid_image_filepath(image_filepath)
         ]
 
@@ -243,6 +246,45 @@ def load_datasplit(filepath: Path) -> pd.DataFrame:
     df_split = pd.read_csv(filepath, sep=";")
     df_split = df_split.replace({np.nan: None})
     return df_split
+
+
+def downsample_by_group(
+    df: pd.DataFrame,
+    ratio: float,
+    groupby_key: list = ["camera_id", "year", "month", "day"],
+) -> pd.Index:
+    """Returns a pd.Index corresponding to the indices to keep to perform some
+    downsampling."""
+    g = df.groupby(groupby_key)
+    G = list(g.groups.items())
+    downsampled_indices = []
+    for _, indices in G:
+        k = int(round(number=ratio * len(indices), ndigits=0))
+        xs = random.sample(list(indices), k=k)
+        downsampled_indices.extend(xs)
+    return pd.Index(downsampled_indices)
+
+
+def balance_classes(df_split: pd.DataFrame) -> pd.DataFrame:
+    """Given a df_split dataframe, it rebalances the classes at the group level
+    (burst of images from the same camera).
+
+    It can allow a model to train faster and better.
+    """
+    df_counts = df_split.groupby("class").count().reset_index("class")
+    n_bears = df_counts[df_counts["class"] == "bear"]["image_filepath"].iloc[0]
+    n_others = df_counts[df_counts["class"] == "other"]["image_filepath"].iloc[0]
+    ratio = n_others / n_bears
+    df_others = df_split[df_split["class"] == "other"]
+    df_bears = df_split[df_split["class"] == "bear"]
+    if ratio <= 1:
+        keep_bear_indices = downsample_by_group(df=df_bears, ratio=ratio)
+        keep_indices = keep_bear_indices.copy().append(df_others.index)
+        return df_split.iloc[keep_indices]
+    else:
+        keep_other_indices = downsample_by_group(df=df_others, ratio=ratio)
+        keep_indices = keep_other_indices.copy().append(df_bears.index)
+        return df_split.iloc[keep_indices]
 
 
 ## REPL

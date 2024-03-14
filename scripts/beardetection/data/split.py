@@ -3,9 +3,11 @@ import logging
 from pathlib import Path
 
 from dateutil import parser
+from tqdm import tqdm
 
 from beardetection.data.split import split_by_camera_and_date
 from beardetection.data.utils import (
+    balance_classes,
     exif,
     get_annotation_filepaths,
     get_image_filepaths_without_bears,
@@ -28,6 +30,11 @@ def make_cli_parser() -> argparse.ArgumentParser:
         help="path pointing to the yolov8 bbox annotations",
         default="./data/04_feature/beardetection/bearbody/HackThePlanet/",
         type=Path,
+    )
+    parser.add_argument(
+        "--balance",
+        help="Should we balance the dataset?",
+        action="store_true",
     )
     parser.add_argument(
         "--output-dir",
@@ -106,31 +113,6 @@ def make_X(input_dir_hack_the_planet: Path, annotations_input_dir: Path) -> list
     """Returns the datapoints, which are a list of dicts containing the
     following keys:
 
-    - label_filepath: str
-    - image_filepath: str
-    - camera_id:  str
-    - year, month, day, hour, minute: integers
-    - exif: dict
-    """
-    annotation_filepaths = get_annotation_filepaths(input_dir=annotations_input_dir)
-    X = [{"label_filepath": label_filepath} for label_filepath in annotation_filepaths]
-    X_image = add_image_filepath(
-        X=X,
-        input_dir_hack_the_planet=input_dir_hack_the_planet,
-        input_dir=annotations_input_dir,
-    )
-    X_filtered = [x for x in X_image if x["image_filepath"]]
-    logging.info(f"Found {len(X) - len(X_filtered)} missing images")
-    X_exif = [{**x, "exif": exif(x["image_filepath"])} for x in X_filtered]
-    X_datetime = add_datetime(X_exif)
-    X_camera_id = add_camera_id(X_datetime)
-    return X_camera_id
-
-
-def make_X2(input_dir_hack_the_planet: Path, annotations_input_dir: Path) -> list[dict]:
-    """Returns the datapoints, which are a list of dicts containing the
-    following keys:
-
     - class: str - value in {bear, other}
     - label_filepath: Optional[str] - optional filepath that contains the label bbox
     - image_filepath: str
@@ -139,9 +121,10 @@ def make_X2(input_dir_hack_the_planet: Path, annotations_input_dir: Path) -> lis
     - exif: dict
     """
     annotation_filepaths = get_annotation_filepaths(input_dir=annotations_input_dir)
+    logging.info(f"loading valid annotation filepaths")
     X_bears = [
         {"label_filepath": label_filepath, "class": "bear"}
-        for label_filepath in annotation_filepaths
+        for label_filepath in tqdm(annotation_filepaths)
         if is_valid_annotation_filepath(label_filepath)
     ]
     X_bears = add_image_filepath(
@@ -179,20 +162,25 @@ if __name__ == "__main__":
         input_dir = args["input_dir"]
         output_dir = args["output_dir"]
         input_dir_hack_the_planet = args["input_dir_hack_the_planet"]
-        # X = make_X(
-        #     input_dir_hack_the_planet=input_dir_hack_the_planet,
-        #     annotations_input_dir=input_dir,
-        # )
-        X = make_X2(
+        X = make_X(
             input_dir_hack_the_planet=input_dir_hack_the_planet,
             annotations_input_dir=input_dir,
         )
         df_split = split_by_camera_and_date(X=X)
-        logging.info(df_split.head(n=10))
-        # TODO: should we rebalance the classes to prevent class imbalance?
-        logging.info(df_split.groupby("class").count())
         output_dir.mkdir(exist_ok=True, parents=True)
-        df_split.to_csv(output_dir / "data_split.csv", sep=";")
+
+        if args["balance"]:
+            df_split_balanced = balance_classes(df_split=df_split)
+            logging.info(df_split_balanced.groupby("class").count())
+
+            logging.info(
+                f"downsampling bear images to rebalance the dataset: {len(df_split) - len(df_split_balanced)}"
+            )
+            df_split_balanced.to_csv(output_dir / "data_split.csv", sep=";")
+        else:
+            logging.info(df_split.head(n=10))
+            logging.info(df_split.groupby("class").count())
+            df_split.to_csv(output_dir / "data_split.csv", sep=";")
 
 
 ## REPL driven
