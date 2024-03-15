@@ -17,6 +17,7 @@ def train(model: YOLO, params: dict):
         project=project,
         name=experiment_name,
         data=data_path,
+        batch=params["batch"],
         epochs=params["epochs"],
         imgsz=params["imgsz"],
         close_mosaic=params["close_mosaic"],
