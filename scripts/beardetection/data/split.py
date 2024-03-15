@@ -7,7 +7,6 @@ from tqdm import tqdm
 
 from beardetection.data.split import split_by_camera_and_date
 from beardetection.data.utils import (
-    balance_classes,
     exif,
     get_annotation_filepaths,
     get_image_filepaths_without_bears,
@@ -170,18 +169,7 @@ if __name__ == "__main__":
         logging.info(df_split.head(n=10))
         logging.info(df_split.groupby("class").count())
         output_dir.mkdir(exist_ok=True, parents=True)
-
-        if args["balance"]:
-            logging.info("rebalancing the df_split")
-            df_split_balanced = balance_classes(df_split=df_split)
-            logging.info(df_split_balanced.groupby("class").count())
-
-            logging.info(
-                f"downsampling bear images to rebalance the dataset: {len(df_split) - len(df_split_balanced)}"
-            )
-            df_split_balanced.to_csv(output_dir / "data_split.csv", sep=";")
-        else:
-            df_split.to_csv(output_dir / "data_split.csv", sep=";")
+        df_split.to_csv(output_dir / "data_split.csv", sep=";")
 
 
 ## REPL driven

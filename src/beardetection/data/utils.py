@@ -174,43 +174,49 @@ def downsample_by_group(
     df: pd.DataFrame,
     ratio: float,
     groupby_key: list = ["camera_id", "year", "month", "day"],
-) -> pd.Index:
+) -> pd.DataFrame:
     """Returns a pd.Index corresponding to the indices to keep to perform some
     downsampling."""
-    g = df.groupby(groupby_key)
+    df_result = df.copy().reset_index()
+    g = df_result.groupby(groupby_key)
     G = list(g.groups.items())
     downsampled_indices = []
     for _, indices in G:
-        k = int(round(number=ratio * len(indices), ndigits=0))
+        k = int(max(1, round(number=ratio * len(indices), ndigits=0)))
         xs = random.sample(list(indices), k=k)
         downsampled_indices.extend(xs)
-    return pd.Index(downsampled_indices)
+    return df_result.iloc[downsampled_indices]
+
+
+def get_ratio_others_over_bears(df_split: pd.DataFrame) -> float:
+    df_counts = df_split.copy().groupby("class").count().reset_index("class")
+    n_bears = df_counts[df_counts["class"] == "bear"]["image_filepath"].iloc[0]
+    n_others = df_counts[df_counts["class"] == "other"]["image_filepath"].iloc[0]
+    return n_others / n_bears
 
 
 def balance_classes(df_split: pd.DataFrame) -> pd.DataFrame:
     """Given a df_split dataframe, it rebalances the classes at the group level
-    (burst of images from the same camera).
+    (burst of images from the same camera) using downsampling techniques.
 
     It can allow a model to train faster and better.
     """
-    df_counts = df_split.copy().groupby("class").count().reset_index("class")
-    n_bears = df_counts[df_counts["class"] == "bear"]["image_filepath"].iloc[0]
-    n_others = df_counts[df_counts["class"] == "other"]["image_filepath"].iloc[0]
-    ratio = n_others / n_bears
+    ratio = get_ratio_others_over_bears(df_split=df_split)
     df_others = df_split[df_split["class"] == "other"]
     df_bears = df_split[df_split["class"] == "bear"]
     if ratio <= 1:
-        keep_bear_indices = downsample_by_group(df=df_bears, ratio=ratio)
-        logging.info(
-            f"keep_bear_indices: {keep_bear_indices} - {len(keep_bear_indices)}"
+        df_bears_downsampled = downsample_by_group(df=df_bears, ratio=ratio)
+        df_split_downsampled = pd.concat(
+            [df_bears_downsampled, df_others.copy().reset_index()]
         )
-        keep_indices = keep_bear_indices.copy().append(df_others.index)
-        logging.info(f"keep_indices: {keep_indices} - {len(keep_indices)}")
-        return df_split.iloc[keep_indices]
+
+        return df_split_downsampled
     else:
-        keep_other_indices = downsample_by_group(df=df_others, ratio=ratio)
-        keep_indices = keep_other_indices.copy().append(df_bears.index)
-        return df_split.iloc[keep_indices]
+        df_others_downsampled = downsample_by_group(df=df_others, ratio=ratio)
+        df_split_downsampled = pd.concat(
+            [df_bears.copy().reset_index(), df_others_downsampled]
+        )
+        return df_split_downsampled
 
 
 ## REPL

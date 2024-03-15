@@ -67,7 +67,7 @@ def make_cli_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--data",
         help="The data.yaml file containing information for yolov8 to train.",
-        default="data/05_model_input/beardetection/yolov8/data.yaml",
+        default="data/05_model_input/beardetection/bare/yolov8/data.yaml",
     )
     parser.add_argument(
         "-log",

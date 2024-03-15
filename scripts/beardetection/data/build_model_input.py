@@ -1,13 +1,21 @@
 import argparse
 import logging
 import os
+import random
 import shutil
 from pathlib import Path
 
 import pandas as pd
+from PIL import Image
 from tqdm import tqdm
 
-from beardetection.data.utils import load_datasplit, write_data_yaml
+from beardetection.data.augment import augment
+from beardetection.data.utils import (
+    balance_classes,
+    get_ratio_others_over_bears,
+    load_datasplit,
+    write_data_yaml,
+)
 
 
 def make_cli_parser() -> argparse.ArgumentParser:
@@ -18,6 +26,11 @@ def make_cli_parser() -> argparse.ArgumentParser:
         help="path pointing to the hack the planet dataset",
         default="./data/01_raw/Hack the Planet",
         type=Path,
+    )
+    parser.add_argument(
+        "--balance",
+        help="value in downsample, upsample - how should we balance the dataset. If nothing is passed, then it does not balance the dataset.",
+        required=False,
     )
     parser.add_argument(
         "--input-dir",
@@ -55,6 +68,12 @@ def validate_parsed_args(args: dict) -> bool:
         return True
 
 
+def get_dst_image_filepath(
+    output_dir: Path, split: str, src_image_filepath: Path
+) -> Path:
+    return output_dir / split / "images" / Path(src_image_filepath).name
+
+
 def copy_over(
     output_dir: Path,
     df_row: pd.Series,
@@ -64,7 +83,12 @@ def copy_over(
     src_image_filepath = df_row["image_filepath"]
     m_src_label_filepath = df_row["label_filepath"]
 
-    dst_image_filepath = output_dir / split / "images" / Path(src_image_filepath).name
+    # dst_image_filepath = output_dir / split / "images" / Path(src_image_filepath).name
+    dst_image_filepath = get_dst_image_filepath(
+        output_dir=output_dir,
+        split=df_row["split"],
+        src_image_filepath=Path(src_image_filepath),
+    )
     os.makedirs(dst_image_filepath.parent, exist_ok=True)
     shutil.copy(src=src_image_filepath, dst=dst_image_filepath)
     if m_src_label_filepath:
@@ -73,6 +97,54 @@ def copy_over(
         )
         os.makedirs(dst_label_filepath.parent, exist_ok=True)
         shutil.copy(src=m_src_label_filepath, dst=dst_label_filepath)
+
+
+def downsample(df_split: pd.DataFrame, output_dir: Path) -> None:
+    """Downsamples the provided df_split to rebalance the classes."""
+    df_split_downsampled = balance_classes(df_split)
+    logging.info("df_split")
+    logging.info(df_split.groupby("class").count())
+    logging.info("df_split_downsampled")
+    logging.info(df_split_downsampled.groupby("class").count())
+
+    for _, df_row in tqdm(df_split_downsampled.iterrows()):
+        copy_over(output_dir=output_dir, df_row=df_row)
+
+
+def upsample(
+    df_split: pd.DataFrame,
+    output_dir: Path,
+) -> None:
+    ratio = get_ratio_others_over_bears(df_split=df_split)
+    k = int(round(1.0 / ratio))
+    logging.info(f"ratio others / bears: {ratio}")
+    logging.info(f"k: {k}")
+    for _, df_row in tqdm(df_split.iterrows()):
+        copy_over(output_dir=output_dir, df_row=df_row)
+        if df_row["class"] == "other" and k > 1:
+            image_filepath = Path(df_row["image_filepath"])
+            try:
+                image = Image.open(image_filepath)
+                augmented_images = augment(image)
+                images = random.sample(augmented_images, k)
+                for i, augmented_image in enumerate(images):
+                    dst_image_filepath = get_dst_image_filepath(
+                        output_dir=output_dir,
+                        split=df_row["split"],
+                        src_image_filepath=image_filepath,
+                    )
+                    augmented_image_filepath = (
+                        dst_image_filepath.parent
+                        / f"{dst_image_filepath.stem}_{i}{dst_image_filepath.suffix}"
+                    )
+                    # FIXME
+                    logging.info(f"dst_image_filepath: {dst_image_filepath}")
+                    logging.info(
+                        f"augmented_image_filepath: {augmented_image_filepath}"
+                    )
+                    augmented_image.save(augmented_image_filepath)
+            except:
+                logging.error(f"could not augment image: {image_filepath}")
 
 
 if __name__ == "__main__":
@@ -89,7 +161,6 @@ if __name__ == "__main__":
         logging.info(f"Loading the datasplit from {args['data_split']}")
         df_split = load_datasplit(args["data_split"])
 
-        logging.info(df_split.head(n=10))
         logging.info(f"Creating dir at {output_dir}")
         output_dir.mkdir(exist_ok=True, parents=True)
         shutil.rmtree(output_dir)
@@ -97,7 +168,12 @@ if __name__ == "__main__":
 
         write_data_yaml(output_dir)
 
-        for idx, df_row in tqdm(df_split.iterrows()):
-            copy_over(output_dir=output_dir, df_row=df_row)
+        if args["balance"] == "downsample":
+            downsample(df_split=df_split, output_dir=output_dir)
+        elif args["balance"] == "upsample":
+            upsample(df_split=df_split, output_dir=output_dir)
+        else:
+            for idx, df_row in tqdm(df_split.iterrows()):
+                copy_over(output_dir=output_dir, df_row=df_row)
 
         exit(0)

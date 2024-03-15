@@ -672,21 +672,26 @@ beardetection_data_split:
 	python ./scripts/beardetection/data/split.py \
 	  --loglevel "info"
 
-beardetection_data_split_balance:
-	python ./scripts/beardetection/data/split.py \
-	  --balance \
-	  --output-dir ./data/04_feature/beardetection/split_balance/ \
+beardetection_data_build_model_input_bare:
+	python ./scripts/beardetection/data/build_model_input.py \
+	  --output-dir ./data/05_model_input/beardetection/bare/yolov8/ \
 	  --loglevel "info"
 
-beardetection_data_build_model_input:
+beardetection_data_build_model_input_balance_downsample:
 	python ./scripts/beardetection/data/build_model_input.py \
+	  --balance "downsample" \
+	  --data-split ./data/04_feature/beardetection/split/data_split.csv \
+	  --output-dir ./data/05_model_input/beardetection/downsample/yolov8/ \
 	  --loglevel "info"
 
-beardetection_data_build_model_input_balance:
+beardetection_data_build_model_input_balance_upsample:
 	python ./scripts/beardetection/data/build_model_input.py \
-	  --data-split ./data/04_feature/beardetection/split_balance/data_split.csv \
-	  --output-dir ./data/05_model_input/beardetection/yolov8_balance/ \
+	  --balance "upsample" \
+	  --data-split ./data/04_feature/beardetection/split/data_split.csv \
+	  --output-dir ./data/05_model_input/beardetection/upsample/yolov8/ \
 	  --loglevel "info"
+
+beardetection_data_build_model_input: beardetection_data_build_model_input_bare beardetection_data_build_model_input_balance_downsample beardetection_data_build_model_input_balance_upsample
 
 beardetection_train_baseline:
 	python ./scripts/beardetection/model/train.py \
@@ -694,10 +699,17 @@ beardetection_train_baseline:
 	  --batch 64 \
 	  --loglevel "info"
 
-beardetection_train_baseline_balance:
+beardetection_train_baseline_balance_downsample:
 	python ./scripts/beardetection/model/train.py \
-	  --data ./data/05_model_input/beardetection/yolov8_balance/data.yaml \
-	  --experiment-name "baseline_balance" \
+	  --data ./data/05_model_input/beardetection/downsample/yolov8/data.yaml \
+	  --experiment-name "baseline_downsample" \
+	  --batch 64 \
+	  --loglevel "info"
+
+beardetection_train_baseline_balance_upsample:
+	python ./scripts/beardetection/model/train.py \
+	  --data ./data/05_model_input/beardetection/upsample/yolov8/data.yaml \
+	  --experiment-name "baseline_upsample" \
 	  --batch 64 \
 	  --loglevel "info"
 
@@ -711,13 +723,26 @@ beardetection_train_best:
 	  --degrees 30 \
 	  --loglevel "info"
 
-beardetection_train_best_balance:
+beardetection_train_best_balance_downsample:
 	python ./scripts/beardetection/model/train.py \
-	  --data ./data/05_model_input/beardetection/yolov8_balance/data.yaml \
-	  --experiment-name "best_balance" \
+	  --data ./data/05_model_input/beardetection/downsample/yolov8/data.yaml \
+	  --experiment-name "best_downsample" \
 	  --batch 64 \
 	  --epochs 200 \
 	  --close-mosaic 50 \
 	  --imgsz 1024 \
 	  --degrees 30 \
 	  --loglevel "info"
+
+beardetection_train_best_balance_upsample:
+	python ./scripts/beardetection/model/train.py \
+	  --data ./data/05_model_input/beardetection/downsample/yolov8/data.yaml \
+	  --experiment-name "best_upsample" \
+	  --batch 64 \
+	  --epochs 200 \
+	  --close-mosaic 50 \
+	  --imgsz 1024 \
+	  --degrees 30 \
+	  --loglevel "info"
+
+beardetection_train: beardetection_train_baseline beardetection_train_baseline_balance_downsample beardetection_train_baseline_balance_upsample beardetection_train_best beardetection_train_best_balance_downsample beardetection_train_best_balance_upsample
