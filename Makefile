@@ -584,14 +584,14 @@ bearidentification_metriclearning_train: bearidentification_metriclearning_train
 bearidentification_metriclearning_train_hyperparameter_search_by_provided_bear_id:
 	python ./scripts/bearidentification/metriclearning/model/hyperparameter_search.py \
 	  --n 10 \
-	  --experiment-name "hyperparameter_search_by_provided_bear_id"
+	  --experiment-name "hyperparameter_search_by_provided_bear_id" \
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_hyperparameter_search_by_individual:
 	python ./scripts/bearidentification/metriclearning/model/hyperparameter_search.py \
 	  --n 10 \
 	  --split-type "by_individual" \
-	  --experiment-name "hyperparameter_search_by_individual"
+	  --experiment-name "hyperparameter_search_by_individual" \
 	  --loglevel "info"
 
 bearidentification_metriclearning_train_hyperparameter_search: bearidentification_metriclearning_train_hyperparameter_search_by_provided_bear_id bearidentification_metriclearning_train_hyperparameter_search_by_individual
