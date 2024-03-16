@@ -11,7 +11,7 @@ def load_model(model_str: str) -> YOLO:
 def train(model: YOLO, params: dict):
     """Main function for running a train run."""
     data_path = Path(params["data"]).absolute()
-    project = f"data/06_models/beardetection/yolov8/"
+    project = "data/06_models/beardetection/yolov8/"
     experiment_name = params["experiment_name"] or "train"
     model.train(
         project=project,

@@ -746,7 +746,7 @@ beardetection_train_best_balance_downsample:
 
 beardetection_train_best_balance_upsample:
 	python ./scripts/beardetection/model/train.py \
-	  --data ./data/05_model_input/beardetection/downsample/yolov8/data.yaml \
+	  --data ./data/05_model_input/beardetection/upsample/yolov8/data.yaml \
 	  --experiment-name "best_upsample" \
 	  --batch 64 \
 	  --epochs 200 \

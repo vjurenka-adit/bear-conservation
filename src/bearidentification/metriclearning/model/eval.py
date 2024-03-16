@@ -36,6 +36,7 @@ def run(
 ) -> None:
     """Main entrypoint to run the evaluation."""
     device = get_best_device()
+    logging.info(f"device: {device}")
     best_model_filepath = get_best_model_filepath(train_run_root_dir=train_run_root_dir)
     assert (
         best_model_filepath.exists()

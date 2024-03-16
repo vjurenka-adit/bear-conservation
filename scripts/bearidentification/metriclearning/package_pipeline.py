@@ -68,8 +68,9 @@ def validate_parsed_args(args: dict) -> bool:
         )
         return False
     else:
-        logging.info(f"Loading metriclearning_model to check keys")
+        logging.info("Loading metriclearning_model to check keys")
         device = get_best_device()
+        logging.info(f"device: {device}")
         loaded_metriclearning_model = torch.load(
             args["metriclearning_model_filepath"],
             map_location=device,
