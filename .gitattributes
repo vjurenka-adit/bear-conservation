@@ -1,3 +1,4 @@
 *pipeline.zip filter=lfs diff=lfs merge=lfs -text
 chips.zip filter=lfs diff=lfs merge=lfs -text
+model.pt filter=lfs diff=lfs merge=lfs -text
 *.ipynb filter=lfs diff=lfs merge=lfs -text

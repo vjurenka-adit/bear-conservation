@@ -755,4 +755,33 @@ beardetection_train_best_balance_upsample:
 	  --degrees 30 \
 	  --loglevel "info"
 
+beardetection_train_best_balance_upsample_imgsz_640:
+	python ./scripts/beardetection/model/train.py \
+	  --data ./data/05_model_input/beardetection/upsample/yolov8/data.yaml \
+	  --experiment-name "best_upsample_imgsz_640" \
+	  --batch 64 \
+	  --epochs 200 \
+	  --close-mosaic 50 \
+	  --imgsz 640 \
+	  --degrees 30 \
+	  --loglevel "info"
+
 beardetection_train: beardetection_train_baseline beardetection_train_baseline_balance_downsample beardetection_train_baseline_balance_upsample beardetection_train_best beardetection_train_best_balance_downsample beardetection_train_best_balance_upsample
+
+beardetection_install_model:
+	./scripts/beardetection/install_model.sh
+
+beardetection_predict:
+	python ./scripts/beardetection/model/predict.py \
+	  --model-weights ./data/06_models/beardetection/model/weights/model.pt \
+	  --source-path ./data/09_external/detect/images/bears/image1.jpg \
+	  --save-path ./data/07_model_output/beardetection/predictions/ \
+	  --loglevel "info"
+
+beardetection_eval:
+	python ./scripts/beardetection/model/eval.py \
+	  --split "test" \
+	  --loglevel "info"
+	python ./scripts/beardetection/model/eval.py \
+	  --split "val" \
+	  --loglevel "info"

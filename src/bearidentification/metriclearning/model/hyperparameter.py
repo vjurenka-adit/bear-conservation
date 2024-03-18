@@ -127,7 +127,7 @@ def make_model_config(model_grid: dict, random_seed: int) -> dict:
     params = _draw_params(random_seed=random_seed, grid=model_grid)
     result = {}
     default_preprocessing = {
-        "values": {"dtypes": "float32", "scale": True},
+        "values": {"dtype": "float32", "scale": True},
         "crop_size": 224,
         "normalization": {
             "mean": [0.485, 0.456, 0.406],

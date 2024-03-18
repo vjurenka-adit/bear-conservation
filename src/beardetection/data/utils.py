@@ -24,6 +24,12 @@ class MyDumper(yaml.Dumper):
         return super(MyDumper, self).increase_indent(flow, False)
 
 
+def yaml_read(path: Path) -> dict:
+    """Returns yaml content as a python dict."""
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
+
 def write_data_yaml(path: Path) -> None:
     """Writes the `data.yaml` file necessary for YOLOv8 training at `path`
     location."""
