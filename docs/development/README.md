@@ -89,3 +89,24 @@ To download all data, run the following command:
 export PRIVATE_KEY=findmeonroboflow
 make data
 ```
+
+## Setup
+
+### Virtualenv
+
+Create a virtualenv using your tool of
+choice (eg. conda, pyenv, regular python,
+...) and activate it.
+
+```sh
+conda create -n ai4bears python=3.9
+conda activate ai4bears
+```
+
+### Installing python dependencies
+
+Then one can run the following command to install the python dependencies:
+
+```sh
+make dev_setup
+```

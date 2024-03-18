@@ -10,13 +10,19 @@ else
 endif
 
 ifeq ($(platform), Darwin)
-    platform_specific_requirements = requirements/macos.txt
+    platform_specific_requirements = requirements/dev/macos.txt
 else
-	platform_specific_requirements = requirements/linux.txt
+	platform_specific_requirements = requirements/dev/linux.txt
 endif
 
-install_dependencies: $(platform_specific_requirements)
+install_dev_dependencies: $(platform_specific_requirements)
 	python -m pip install -r $(platform_specific_requirements)
+
+install_beardetection_dependencies:
+	python -m pip install -r requirements/beardetection.txt
+
+install_bearidentification_dependencies:
+	python -m pip install -r requirements/bearidentification.txt
 
 install_local_packages:
 	python -m pip install -e .
@@ -28,7 +34,11 @@ install_vendor_packages:
 install_grounding_dino:
 	./scripts/install_grounding_dino.sh
 
-setup: install_dependencies install_local_packages install_vendor_packages
+dev_setup: install_dev_dependencies install_local_packages install_vendor_packages
+
+beardetection_setup: install_local_packages install_beardetection_dependencies
+
+bearidentification_setup: install_local_packages install_bearidentification_dependencies
 
 dev_notebook:
 	jupyter lab

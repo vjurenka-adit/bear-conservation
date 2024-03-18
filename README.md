@@ -26,25 +26,6 @@ vital role they play in maintaining a balanced ecosystem.
 
 ## Setup
 
-### Virtualenv
-
-Create a virtualenv using your tool of
-choice (eg. conda, pyenv, regular python,
-...) and activate it.
-
-```sh
-conda create -n fruitpunch_bears python=3.9
-conda activate fruitpunch_bears
-```
-
-### Installing python dependencies
-
-Then one can run the following command to install the python dependencies:
-
-```sh
-make setup
-```
-
 ### git-lfs
 
 Make sure [`git-lfs`](https://git-lfs.com/) is installed on your system.
@@ -68,14 +49,79 @@ git-lfs install
 
 ```sh
 brew install git-lfs
+git-lfs install
 ```
 
 #### Windows
 
 Download and run the latest [windows installer](https://github.com/git-lfs/git-lfs/releases).
 
+## Detect bears
+
+### beardetection virtualenv
+
+Create a virtualenv using your tool of
+choice (eg. conda, pyenv, regular python,
+...) and activate it.
+
+```sh
+conda create -n beardetection python=3.9
+conda activate beardetection
+```
+
+### Install the beardetection dependencies
+
+```sh
+make beardetection_setup
+```
+
+### Install the model
+
+Run the following command to install the model:
+
+```sh
+make beardetection_install_model
+```
+
+### Detect
+
+Use the dummy detection script to check that everyhing works as expected:
+
+```sh
+make beardetection_predict
+```
+
+You should be able to find the predictions in the folder
+`./data/07_model_output/beardetection/predictions/`
+
+Now you can start predicting on your own images using the following python script:
+
+```sh
+python ./scripts/beardetection/model/predict.py \
+  --model-weights ./data/06_models/beardetection/model/weights/model.pt \
+  --source-path ./data/09_external/detect/images/bears/image1.jpg \
+  --save-path ./data/07_model_output/beardetection/predictions/ \
+  --loglevel "info"
+```
+
 ## Identify bears
 
+### bearidentification virtualenv
+
+Create a virtualenv using your tool of
+choice (eg. conda, pyenv, regular python,
+...) and activate it.
+
+```sh
+conda create -n bearidentification python=3.9
+conda activate bearidentification
+```
+
+### Install the bearidentification dependencies
+
+```sh
+make bearidentification_setup
+```
 
 ### Install the packaged pipeline
 

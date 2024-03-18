@@ -1,0 +1,5 @@
+pytorch-metric-learning==2.4.1
+torch==2.2.0
+tqdm==4.66.1
+ultralytics==8.1.9
+umap-learn==0.5.5
