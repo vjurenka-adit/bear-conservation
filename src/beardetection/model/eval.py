@@ -181,6 +181,7 @@ def evaluate(
     logging.info(f"bear_threshold: {bear_threshold}")
     logging.info(f"confusion matrix: {cf_matrix}")
     plot_confusion_matrix(cf_matrix=cf_matrix, normalize=True, save_path=save_path)
+    plot_confusion_matrix(cf_matrix=cf_matrix, normalize=False, save_path=save_path)
     plt.show()
 
 
