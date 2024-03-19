@@ -107,14 +107,21 @@ def inference_df(model: YOLO, split: str, data_filepath: Path) -> pd.DataFrame:
     return pd.DataFrame(result)
 
 
-def make_y_true(df: pd.DataFrame, label_to_class: dict = LABEL_TO_CLASS) -> list[int]:
-    return df["ground_truth_label"].map(lambda label: label_to_class[label]).to_list()
+def make_y_true(
+    df: pd.DataFrame,
+    label_to_class: dict = LABEL_TO_CLASS,
+) -> torch.Tensor:
+    return torch.tensor(
+        df["ground_truth_label"].map(lambda label: label_to_class[label]).to_list()
+    )
 
 
 def make_y_hat(
-    df: pd.DataFrame, bear_threshold: float = 0.0, label_to_class: dict = LABEL_TO_CLASS
-) -> list[int]:
-    return (
+    df: pd.DataFrame,
+    bear_threshold: float = 0.0,
+    label_to_class: dict = LABEL_TO_CLASS,
+) -> torch.Tensor:
+    return torch.tensor(
         df["is_bear_prediction"]
         .map(
             lambda x: label_to_class["bear"]
@@ -169,19 +176,47 @@ def evaluate(
     bear_threshold: float = 0.0,
     save_path: Optional[Path] = None,
 ) -> None:
-    num_classes = 2  # bear or not bear
-    metric_cf_matrix = torchmetrics.ConfusionMatrix(
-        task="multiclass",
-        num_classes=num_classes,
-        ignore_index=num_classes,
-    )
     y_true = make_y_true(df=df_inference)
     y_hat = make_y_hat(df=df_inference, bear_threshold=bear_threshold)
-    cf_matrix = metric_cf_matrix(torch.tensor(y_true), torch.tensor(y_hat)).numpy()
+    cf_matrix = torchmetrics.functional.confusion_matrix(
+        preds=y_hat,
+        target=y_true,
+        task="binary",
+    )
+    precision = torchmetrics.functional.precision(
+        preds=y_hat,
+        target=y_true,
+        task="binary",
+    )
+    recall = torchmetrics.functional.recall(
+        preds=y_hat,
+        target=y_true,
+        task="binary",
+    )
+    f1_score = torchmetrics.functional.f1_score(
+        preds=y_hat,
+        target=y_true,
+        task="binary",
+    )
     logging.info(f"bear_threshold: {bear_threshold}")
-    logging.info(f"confusion matrix: {cf_matrix}")
-    plot_confusion_matrix(cf_matrix=cf_matrix, normalize=True, save_path=save_path)
-    plot_confusion_matrix(cf_matrix=cf_matrix, normalize=False, save_path=save_path)
+    results = {
+        "precision": precision.item(),
+        "recall": recall.item(),
+        "f1_score": f1_score.item(),
+        "confusion_matrix": cf_matrix.tolist(),
+    }
+    logging.info(f"results: {results}")
+
+    if save_path:
+        df_results = pd.DataFrame([results])
+        df_results.to_csv(save_path / "results.csv")
+
+    plot_confusion_matrix(
+        cf_matrix=cf_matrix.numpy(), normalize=True, save_path=save_path
+    )
+    plot_confusion_matrix(
+        cf_matrix=cf_matrix.numpy(), normalize=False, save_path=save_path
+    )
     plt.show()
 
 
