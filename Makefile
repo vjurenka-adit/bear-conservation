@@ -787,6 +787,17 @@ beardetection_train_best_balance_upsample_imgsz_320:
 	  --degrees 30 \
 	  --loglevel "info"
 
+beardetection_train_best_balance_upsample_imgsz_160:
+	python ./scripts/beardetection/model/train.py \
+	  --data ./data/05_model_input/beardetection/upsample/yolov8/data.yaml \
+	  --experiment-name "best_upsample_imgsz_160" \
+	  --batch 64 \
+	  --epochs 200 \
+	  --close-mosaic 50 \
+	  --imgsz 160 \
+	  --degrees 30 \
+	  --loglevel "info"
+
 beardetection_train: beardetection_train_baseline beardetection_train_baseline_balance_downsample beardetection_train_baseline_balance_upsample beardetection_train_best beardetection_train_best_balance_downsample beardetection_train_best_balance_upsample
 
 beardetection_install_model:
@@ -806,3 +817,32 @@ beardetection_eval:
 	python ./scripts/beardetection/model/eval.py \
 	  --split "val" \
 	  --loglevel "info"
+
+
+# python ./scripts/beardetection/model/eval.py \
+#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/best_upsample3/" \
+#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
+#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample3/weights/best.pt \
+#   --split "test" \
+#   --loglevel "info"
+
+# python ./scripts/beardetection/model/eval.py \
+#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/upsample_imgsz_640/" \
+#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
+#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample_imgsz_640/weights/best.pt \
+#   --split "test" \
+#   --loglevel "info"
+
+# python ./scripts/beardetection/model/eval.py \
+#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/upsample_imgsz_320/" \
+#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
+#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample_imgsz_320/weights/best.pt \
+#   --split "test" \
+#   --loglevel "info"
+#
+# python ./scripts/beardetection/model/eval.py \
+#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/upsample_imgsz_160/" \
+#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
+#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample_imgsz_160/weights/best.pt \
+#   --split "test" \
+#   --loglevel "info"
