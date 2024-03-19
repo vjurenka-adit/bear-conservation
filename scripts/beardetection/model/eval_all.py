@@ -3,6 +3,8 @@ import logging
 import os
 from pathlib import Path
 
+from tqdm import tqdm
+
 from beardetection.model.eval import load_model, run
 
 
@@ -13,15 +15,16 @@ def make_cli_parser() -> argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model-weights",
-        help="The filepath to the yolov8 model weights.",
-        default="./data/06_models/beardetection/model/weights/model.pt",
+        "--models-root-dir",
+        help="The root dir containing all the trained models.",
+        default="data/06_models/beardetection/yolov8/",
         type=Path,
     )
     parser.add_argument(
         "--data",
         help="The data.yaml file containing information for yolov8 to train.",
-        default="data/05_model_input/beardetection/upsample/yolov8/data.yaml",
+        default="data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml",
+        # default="data/05_model_input/beardetection/upsample/yolov8/data.yaml",
         type=Path,
     )
     parser.add_argument(
@@ -46,10 +49,7 @@ def make_cli_parser() -> argparse.ArgumentParser:
 
 def validate_parsed_args(args: dict) -> bool:
     """Returns whether the parsed args are valid."""
-    if not os.path.isfile(args["data"]):
-        logging.error("invalid --data filepath -- the file does not exist")
-        return False
-    elif args["split"] not in ["train", "val", "test"]:
+    if args["split"] not in ["train", "val", "test"]:
         logging.error("invalid --split value -- Should be in {train, val, test}")
         return False
     else:
@@ -64,13 +64,29 @@ if __name__ == "__main__":
         exit(1)
     else:
         logging.info(args)
-        model_weights = args["model_weights"]
-        logging.info(f"loading model from {model_weights}")
-        model = load_model(model_weights)
-        logging.info(model.info())
-        data_filepath = args["data"]
-        save_path = args["save_path"]
-        split = args["split"]
-        logging.info(f"Running evaluation on split {split}")
-        run(model, data_filepath, split=split, save_path=save_path)
+        models_root_dir = args["models_root_dir"]
+        experiment_names = [
+            dir
+            for dir in os.listdir(models_root_dir)
+            if (models_root_dir / dir).is_dir()
+        ]
+        logging.info(
+            f"Found {len(experiment_names)} trained models: {experiment_names}"
+        )
+        for experiment_name in tqdm(experiment_names):
+            try:
+                logging.info(f"Evaluating model: {experiment_name}")
+                model_weights = (
+                    models_root_dir / experiment_name / "weights" / "best.pt"
+                )
+                logging.info(f"loading model from {model_weights}")
+                model = load_model(model_weights)
+                logging.info(model.info())
+                data_filepath = args["data"]
+                save_path = args["save_path"] / experiment_name
+                split = args["split"]
+                logging.info(f"Running evaluation on split {split}")
+                run(model, data_filepath, split=split, save_path=save_path)
+            except Exception as e:
+                logging.error(f"error: {e}")
         exit(0)

@@ -798,7 +798,7 @@ beardetection_train_best_balance_upsample_imgsz_160:
 	  --degrees 30 \
 	  --loglevel "info"
 
-beardetection_train: beardetection_train_baseline beardetection_train_baseline_balance_downsample beardetection_train_baseline_balance_upsample beardetection_train_best beardetection_train_best_balance_downsample beardetection_train_best_balance_upsample
+beardetection_train: beardetection_train_baseline beardetection_train_baseline_balance_downsample beardetection_train_baseline_balance_upsample beardetection_train_best beardetection_train_best_balance_downsample beardetection_train_best_balance_upsample beardetection_train_best_balance_upsample_imgsz_640 beardetection_train_best_balance_upsample_imgsz_320 beardetection_train_best_balance_upsample_imgsz_160
 
 beardetection_install_model:
 	./scripts/beardetection/install_model.sh
@@ -816,6 +816,11 @@ beardetection_eval:
 	  --loglevel "info"
 	python ./scripts/beardetection/model/eval.py \
 	  --split "val" \
+	  --loglevel "info"
+
+beardetection_eval_all:
+	python ./scripts/beardetection/model/eval_all.py \
+	  --split "test" \
 	  --loglevel "info"
 
 
