@@ -776,6 +776,17 @@ beardetection_train_best_balance_upsample_imgsz_640:
 	  --degrees 30 \
 	  --loglevel "info"
 
+beardetection_train_best_balance_upsample_imgsz_320:
+	python ./scripts/beardetection/model/train.py \
+	  --data ./data/05_model_input/beardetection/upsample/yolov8/data.yaml \
+	  --experiment-name "best_upsample_imgsz_320" \
+	  --batch 64 \
+	  --epochs 200 \
+	  --close-mosaic 50 \
+	  --imgsz 320 \
+	  --degrees 30 \
+	  --loglevel "info"
+
 beardetection_train: beardetection_train_baseline beardetection_train_baseline_balance_downsample beardetection_train_baseline_balance_upsample beardetection_train_best beardetection_train_best_balance_downsample beardetection_train_best_balance_upsample
 
 beardetection_install_model:
