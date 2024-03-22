@@ -121,6 +121,6 @@ def run(
     logging.info(f"Storing metrics in {output_filepath}")
     os.makedirs(output_filepath.parent, exist_ok=True)
     df_metrics.to_csv(output_dir / "evaluation" / "metrics.csv")
-    shutil.rmtree(output_dir / "training_logs")
-    shutil.rmtree(output_dir / "tensorboard")
+    shutil.rmtree(output_dir / "training_logs", ignore_errors=True)
+    shutil.rmtree(output_dir / "tensorboard", ignore_errors=True)
     yaml_write(to=output_dir / "args.yaml", data=args)

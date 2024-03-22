@@ -35,7 +35,7 @@ def get_color(
 
 
 def draw_extrated_chip(ax, chip_image) -> None:
-    ax.set_title(f"Extracted chip")
+    ax.set_title("Extracted chip")
     ax.set_axis_off()
     ax.imshow(chip_image)
 
@@ -46,24 +46,34 @@ def draw_closest_neighbors(
     i_start: int,
     k_closest_neighbors: int,
     indexed_k_nearest_individuals: dict,
-    bear_id: str,
 ) -> None:
     inv_normalize = get_inverse_normalize_transform(
         mean=IMAGENET_MEAN,
         std=IMAGENET_STD,
     )
-    for j in range(k_closest_neighbors):
+
+    neighbors = []
+    for bear_id, xs in indexed_k_nearest_individuals.items():
+        for x in xs:
+            data = x.copy()
+            data["bear_id"] = bear_id
+            neighbors.append(data)
+
+    nearest_neighbors = sorted(
+        neighbors,
+        key=lambda x: x["distance"],
+    )[:k_closest_neighbors]
+    for j, neighbor in enumerate(nearest_neighbors):
         ax = fig.add_subplot(gs[i_start, j])
-        if j < len(indexed_k_nearest_individuals[bear_id]):
-            neighbor = indexed_k_nearest_individuals[bear_id][j]
-            distance = neighbor["distance"]
-            dataset_image = neighbor["dataset_image"]
-            image = inv_normalize(dataset_image).numpy()
-            image = np.transpose(image, (1, 2, 0))
-            color = get_color(distance=distance)
-            ax.set_axis_off()
-            ax.set_title(label=f"{bear_id}: {distance:.2f}", color=color)
-            ax.imshow(image)
+        distance = neighbor["distance"]
+        bear_id = neighbor["bear_id"]
+        dataset_image = neighbor["dataset_image"]
+        image = inv_normalize(dataset_image).numpy()
+        image = np.transpose(image, (1, 2, 0))
+        color = get_color(distance=distance)
+        ax.set_axis_off()
+        ax.set_title(label=f"{bear_id}: {distance:.2f}", color=color)
+        ax.imshow(image)
 
 
 def draw_top_k_individuals(
@@ -157,9 +167,7 @@ def bearid_ui(
         i_start=i_closest_neighbors,
         k_closest_neighbors=k_closest_neighbors,
         indexed_k_nearest_individuals=indexed_k_nearest_individuals,
-        bear_id=bear_ids[0],
     )
-
     # Filling out the grid with top k individuals and random samples
     i_top_k_individual = 4
     ax = fig.add_subplot(gs[i_top_k_individual - 1, :])

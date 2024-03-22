@@ -230,7 +230,7 @@ def run(
         trunk_preprocessing=config["model"]["trunk"].get("preprocessing", {}),
     )
 
-    logging.info(f"loading the df_split")
+    logging.info("loading the df_split")
     df_split = pd.DataFrame(loaded_model["data_split"])
     df_split.info()
 

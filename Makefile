@@ -472,6 +472,16 @@ bearidentification_metriclearning_train_baseline_circleloss_full_by_provided_bea
 	  --config-file "./src/bearidentification/metriclearning/configs/baselines/circleloss/1_baseline_circleloss.yaml" \
 	  --loglevel "info"
 
+# python ./scripts/bearidentification/metriclearning/model/train.py \
+#   --random-seed 0 \
+#   --experiment-name "baseline_circleloss_full_by_provided_bearid" \
+#   --split-root-dir "./data/04_feature/bearidentification/bearid/split/" \
+#   --split-type "by_provided_bearid" \
+#   --dataset-size "full" \
+#   --save-dir "./data/06_models/bearidentification/metric_learning/" \
+#   --config-file "./src/bearidentification/metriclearning/configs/ne_circleloss.yaml" \
+#   --loglevel "info"
+
 bearidentification_metriclearning_train_baselines: bearidentification_metriclearning_train_baseline_tripletmarginloss_full_by_provided_bearid bearidentification_metriclearning_train_baseline_circleloss_full_by_provided_bearid
 
 # -----------
@@ -659,10 +669,20 @@ install_packaged_pipeline:
 # Identification script
 # ---------------------
 
-identify_example:
+identify_example_match:
 	python ./scripts/identify.py \
 	  --source-path ./data/09_external/identify/P1250243.JPG \
-	  --output-dir ./data/07_model_output/identify/example/ \
+	  --output-dir ./data/07_model_output/identify/example/match/ \
+	  --k 3 \
+	  --metriclearning-model-filepath ./data/06_models/pipeline/metriclearning/bearidentification/model.pt \
+	  --metriclearning-knn-index-filepath ./data/06_models/pipeline/metriclearning/bearidentification/knn.index \
+	  --instance-segmentation-weights-filepath ./data/06_models/pipeline/metriclearning/bearfacesegmentation/model.pt \
+	  --loglevel "info"
+
+identify_example_new:
+	python ./scripts/identify.py \
+	  --source-path ./data/09_external/identify/c2NhbGUoKQ.jpg \
+	  --output-dir ./data/07_model_output/identify/example/new/ \
 	  --k 3 \
 	  --metriclearning-model-filepath ./data/06_models/pipeline/metriclearning/bearidentification/model.pt \
 	  --metriclearning-knn-index-filepath ./data/06_models/pipeline/metriclearning/bearidentification/knn.index \
@@ -822,32 +842,3 @@ beardetection_eval_all:
 	python ./scripts/beardetection/model/eval_all.py \
 	  --split "test" \
 	  --loglevel "info"
-
-
-# python ./scripts/beardetection/model/eval.py \
-#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/best_upsample3/" \
-#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
-#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample3/weights/best.pt \
-#   --split "test" \
-#   --loglevel "info"
-
-# python ./scripts/beardetection/model/eval.py \
-#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/upsample_imgsz_640/" \
-#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
-#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample_imgsz_640/weights/best.pt \
-#   --split "test" \
-#   --loglevel "info"
-
-# python ./scripts/beardetection/model/eval.py \
-#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/upsample_imgsz_320/" \
-#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
-#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample_imgsz_320/weights/best.pt \
-#   --split "test" \
-#   --loglevel "info"
-#
-# python ./scripts/beardetection/model/eval.py \
-#   --save-path "./data/08_reporting/beardetection/yolov8/evaluation/upsample_imgsz_160/" \
-#   --data ./data/05_model_input/beardetection/upsample_test_cleaned/yolov8/data.yaml \
-#   --model-weights ./data/06_models/beardetection/yolov8/best_upsample_imgsz_160/weights/best.pt \
-#   --split "test" \
-#   --loglevel "info"
