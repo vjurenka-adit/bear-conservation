@@ -7,8 +7,8 @@ It contains a collection of software packages to work with bears.
 
 <img src="./docs/development/assets/images/model_output/facedetection/image1.jpg" width="250" alt="Detected bear face using the bear face detector" /> <img src="./docs/development/assets/images/model_output/pose/image1.jpg" width="250" alt="Pose of a bear using the bearfacelandmarkdetector" /> <img src="./docs/development/assets/images/model_output/facesegmentation/image1.jpg" width="250" alt="Segmented face of a bear" />
 
-It provides face detection, face segmentation, facial landmark detection and
-bear re-identification models.
+It provides bear detection, bear face detection, bear face segmentation, bear
+facial landmark detection and bear re-identification models.
 
 ## Introduction
 
@@ -64,8 +64,6 @@ Binary classifier to detect bears from camera trap frames (nighttime and daytime
 |:---------------------------:|:----------------:|
 | ![Normalized Confusion Matrix](./reports/beardetection/best_upsample_imgsz_640/evaluation/confusion_matrix_normalized.png) | ![Training](./reports/beardetection/best_upsample_imgsz_640/training/results.png) |
 
-![Predictions](./reports/beardetection/best_upsample_imgsz_640/training/val_batch0_pred.jpg)
-
 ### beardetection virtualenv
 
 Create a virtualenv using your tool of
@@ -93,7 +91,9 @@ make beardetection_install_model
 
 ### Detect
 
-Use the dummy detection script to check that everyhing works as expected:
+![Predictions](./reports/beardetection/best_upsample_imgsz_640/training/val_batch0_pred.jpg)
+
+Use the dummy detection script to check that everything works as expected:
 
 ```sh
 make beardetection_predict
@@ -114,7 +114,15 @@ python ./scripts/beardetection/model/predict.py \
 
 ## Identify bears
 
+### Pipeline Overview
+
 ![Bear IDentification Pipeline](./docs/development/assets/images/pipeline.png)
+
+### Performance
+
+| Precision at 1 | Precision at 3 | Precision at 5 | Precision at 10 |
+|:--------------:|:--------------:|:--------------:|:---------------:|
+|           95.5 |           96.5 |           97.3 |            98.5 |
 
 ### bearidentification virtualenv
 
@@ -143,7 +151,7 @@ make install_packaged_pipeline
 
 ### Predict
 
-Use the dummy predition script to check that everyhing works as expected:
+Use the dummy prediction script to check that everyhing works as expected:
 
 ```sh
 make identify_default
