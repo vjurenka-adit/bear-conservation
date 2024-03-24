@@ -58,6 +58,14 @@ Download and run the latest [windows installer](https://github.com/git-lfs/git-l
 
 ## Detect bears
 
+Binary classifier to detect bears from camera trap frames (nighttime and daytime).
+
+| Normalized Confusion Matrix | Training Metrics |
+|:---------------------------:|:----------------:|
+| ![Normalized Confusion Matrix](./reports/beardetection/best_upsample_imgsz_640/evaluation/confusion_matrix_normalized.png) | ![Training](./reports/beardetection/best_upsample_imgsz_640/training/results.png) |
+
+![Predictions](./reports/beardetection/best_upsample_imgsz_640/training/val_batch0_pred.jpg)
+
 ### beardetection virtualenv
 
 Create a virtualenv using your tool of
@@ -105,6 +113,8 @@ python ./scripts/beardetection/model/predict.py \
 ```
 
 ## Identify bears
+
+![Bear IDentification Pipeline](./docs/development/assets/images/pipeline.png)
 
 ### bearidentification virtualenv
 
