@@ -28,10 +28,10 @@ If you are curious and would like to know how they are generated, check out the
 
 We decided to perform two distinct types of datasplits to evaluate our models
 for different use cases.
-1. __Splitting by individuals__: It allows to  assess how good the model is at
+1. __Splitting by individuals - Disjoint Set__: It allows to  assess how good the model is at
    identifying and clustering unseen individuals.
-2. __Splitting on the provided BearID split__: The BearID team provided a
-   curated split where individuals are spread across the different
+2. __Splitting on the provided BearID split - Open Set__: The BearID team
+   provided a curated split where individuals are spread across the different
 train/val/test splits, avoiding data leaks of images taken the same day for the
 same individual (bursts of images for instance).
 
@@ -96,6 +96,8 @@ For each model, an evaluation folder is created with the following artifacts:
 ### Embeddings
 
 Visualize the embeddings on the different splits is a great way to gain confidence that the model works as expected. Is it possible to visualize how the model improve its embeddings overtime.
+
+![Embeddings with Training Epochs](./assets/images/evaluation/embeddings/embeddings_evolution.png)
 
 <img src="./assets/images/evaluation/embeddings/animated-embeddings.gif" alt="Embeddings improvement over training">
 

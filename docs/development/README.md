@@ -2,6 +2,12 @@
 
 ## Sub projects
 
+### Detection
+
+- [beardetection](./beardetection.md)
+
+### Identification
+
 - [bearfacedetection](./bearfacedetection.md)
 - [bearfacelandmarketection](./bearfacelandmarkdetection.md)
 - [bearfacesegmentation](./bearfacesegmentation.md)

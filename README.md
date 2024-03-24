@@ -60,9 +60,9 @@ Download and run the latest [windows installer](https://github.com/git-lfs/git-l
 
 Binary classifier to detect bears from camera trap frames (nighttime and daytime).
 
-| Normalized Confusion Matrix | Training Metrics |
-|:---------------------------:|:----------------:|
-| ![Normalized Confusion Matrix](./reports/beardetection/best_upsample_imgsz_640/evaluation/confusion_matrix_normalized.png) | ![Training](./reports/beardetection/best_upsample_imgsz_640/training/results.png) |
+| Normalized Confusion Matrix | Training Metrics | Precision/Recall |
+|:---------------------------:|:----------------:|:----------------:|
+| ![Normalized Confusion Matrix](./reports/beardetection/best_upsample_imgsz_640/evaluation/confusion_matrix_normalized.png) | ![Training](./reports/beardetection/best_upsample_imgsz_640/training/results.png) | ![Precision/Recall curve](./reports/beardetection/best_upsample_imgsz_640/evaluation/PR_curve.png) |
 
 ### beardetection virtualenv
 
