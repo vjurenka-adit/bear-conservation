@@ -644,6 +644,16 @@ bearidentification_metriclearning_eval_summary:
 	  --evaluations-root-dir ./data/07_model_output/bearidentification/metriclearning/ \
 	  --loglevel "info"
 
+# TODO: remove
+bearidentification_metriclearning_eval_summary2:
+	python ./scripts/bearidentification/metriclearning/model/eval_all.py \
+	  --train-runs-dir ./data/06_models/bearidentification/metric_learning/ \
+	  --output-dir ./data/07_model_output/bearidentification/metriclearning2/ \
+	  --loglevel "info"
+	python ./scripts/bearidentification/metriclearning/model/eval_summary.py \
+	  --evaluations-root-dir ./data/07_model_output/bearidentification/metriclearning2/ \
+	  --loglevel "info"
+
 
 bearidentification_metriclearning: bearidentification_data_split bearidentification_metriclearning_train bearidentification_metriclearning_eval_summary
 

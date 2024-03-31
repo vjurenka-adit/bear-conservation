@@ -114,7 +114,29 @@ def run(
     if len(dataset_val) > 0:
         dataset_dict["val"] = dataset_val
 
-    all_accuracies = tester.test(dataset_dict, 1, trunk, embedder)
+    splits_to_eval = []
+    if "train" in dataset_dict:
+        splits_to_eval.append(("train", ["train"]))
+
+    if "val" in dataset_dict:
+        splits_to_eval.append(("val", ["val"]))
+
+    if "val" in dataset_dict and "test" in dataset_dict:
+        splits_to_eval.append(("test", ["train", "val"]))
+
+    if "val" not in dataset_dict and "test" in dataset_dict:
+        splits_to_eval.append(("test", ["test"]))
+
+    logging.info(f"splits_to_eval: {splits_to_eval}")
+
+    all_accuracies = tester.test(
+        dataset_dict=dataset_dict,
+        epoch=1,
+        trunk_model=trunk,
+        embedder_model=embedder,
+        splits_to_eval=splits_to_eval,
+    )
+
     pprint.pprint(all_accuracies)
     df_metrics = accuracies_to_df(all_accuracies)
     output_filepath = output_dir / "evaluation" / "metrics.csv"
@@ -123,4 +145,8 @@ def run(
     df_metrics.to_csv(output_dir / "evaluation" / "metrics.csv")
     shutil.rmtree(output_dir / "training_logs", ignore_errors=True)
     shutil.rmtree(output_dir / "tensorboard", ignore_errors=True)
-    yaml_write(to=output_dir / "args.yaml", data=args)
+    data = {
+        **args,
+        "eval": {"splits_to_eval": str(splits_to_eval)},
+    }
+    yaml_write(to=output_dir / "args.yaml", data=data)
