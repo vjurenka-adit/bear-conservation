@@ -1,8 +1,5 @@
 # AI for Bears
 
-This folder contains data and work done during the AI for bears
-challenge organized by [FruitpunchAI](https://www.fruitpunch.ai/).
-
 It contains a collection of software packages to work with bears.
 
 <img src="./docs/development/assets/images/model_output/facedetection/image1.jpg" width="250" alt="Detected bear face using the bear face detector" /> <img src="./docs/development/assets/images/model_output/pose/image1.jpg" width="250" alt="Pose of a bear using the bearfacelandmarkdetector" /> <img src="./docs/development/assets/images/model_output/facesegmentation/image1.jpg" width="250" alt="Segmented face of a bear" />
@@ -10,7 +7,7 @@ It contains a collection of software packages to work with bears.
 It provides bear detection, bear face detection, bear face segmentation, bear
 facial landmark detection and bear re-identification models.
 
-## Introduction
+## Context
 
 Bears, particularly brown bears, are not only charismatic but also serve as
 indicator and umbrella species. By understanding and protecting them, we
