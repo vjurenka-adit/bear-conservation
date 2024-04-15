@@ -177,7 +177,7 @@ documentation](./docs/development/README.md).
 This project was hosted and made possible by the following organizations:
 
 - [FruitpunchAI](https://app.fruitpunch.ai/challenge/ai-for-bears)
-- [BearID Project](https://bearresearch.org/)
+- [The BearID Project](https://bearresearch.org/)
 - [HackThePlanet](https://www.hack-the-planet.io/)
 
 ## Literature
